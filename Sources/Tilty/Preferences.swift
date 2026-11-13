@@ -7,6 +7,7 @@ final class Preferences {
     private enum Key {
         static let paused = "paused"
         static let placementOverrides = "placementOverrides"
+        static let suggestAfterHalves = "suggestAfterHalves"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -16,6 +17,12 @@ final class Preferences {
     var isPaused: Bool {
         get { defaults.bool(forKey: Key.paused) }
         set { defaults.set(newValue, forKey: Key.paused) }
+    }
+
+    /// Show the window picker for the other side after Left or Right. Off by default.
+    var suggestAfterHalves: Bool {
+        get { defaults.bool(forKey: Key.suggestAfterHalves) }
+        set { defaults.set(newValue, forKey: Key.suggestAfterHalves) }
     }
 
     var placementOverrides: [String: ToolbarPlacement] {

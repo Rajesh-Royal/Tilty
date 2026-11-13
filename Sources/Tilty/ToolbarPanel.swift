@@ -8,18 +8,30 @@ import TiltyCore
 final class ToolbarPanel: NSPanel {
 
     static let buttonSize = CGSize(width: 32, height: 22)
+    static let chevronWidth: CGFloat = 22
     static let inset: CGFloat = 2
     static let spacing: CGFloat = 2
+    /// Gap on each side of the thin line before the chevron.
+    static let dividerGap: CGFloat = 3
 
     static var panelSize: CGSize {
         let count = CGFloat(TileAction.allCases.count)
-        return CGSize(
-            width: inset * 2 + buttonSize.width * count + spacing * (count - 1),
-            height: inset * 2 + buttonSize.height
-        )
+        let actions = buttonSize.width * count + spacing * (count - 1)
+        let chevron = dividerGap * 2 + 1 + chevronWidth
+        return CGSize(width: inset * 2 + actions + chevron, height: inset * 2 + buttonSize.height)
     }
 
-    init(onAction: @escaping (TileAction) -> Void) {
+    private let chevron: ToolbarButton
+
+    /// - Parameters:
+    ///   - onAction: a quick button was clicked.
+    ///   - onLayouts: the chevron was clicked. Gets the chevron's frame on screen.
+    init(onAction: @escaping (TileAction) -> Void, onLayouts: @escaping (NSRect) -> Void) {
+        var chevronFrameProvider: (() -> NSRect)?
+        chevron = ToolbarButton(symbolName: "chevron.down", title: "More Layouts", pointSize: 11, weight: .bold) {
+            onLayouts(chevronFrameProvider?() ?? .zero)
+        }
+
         super.init(
             contentRect: NSRect(origin: .zero, size: Self.panelSize),
             styleMask: [.borderless, .nonactivatingPanel],
@@ -50,17 +62,38 @@ final class ToolbarPanel: NSPanel {
 
         var x = Self.inset
         for action in TileAction.allCases {
-            let button = TileButton(action: action, onClick: onAction)
+            let button = ToolbarButton(symbolName: action.symbolName, title: action.title) { onAction(action) }
             button.frame = NSRect(x: x, y: Self.inset, width: Self.buttonSize.width, height: Self.buttonSize.height)
             background.addSubview(button)
             x += Self.buttonSize.width + Self.spacing
         }
+        x += Self.dividerGap - Self.spacing
+
+        let divider = NSBox(frame: NSRect(x: x, y: Self.inset + 4, width: 1, height: Self.buttonSize.height - 8))
+        divider.boxType = .custom
+        divider.borderWidth = 0
+        divider.fillColor = NSColor.separatorColor
+        background.addSubview(divider)
+        x += 1 + Self.dividerGap
+
+        chevron.frame = NSRect(x: x, y: Self.inset, width: Self.chevronWidth, height: Self.buttonSize.height)
+        background.addSubview(chevron)
 
         contentView = background
+
+        chevronFrameProvider = { [weak self] in
+            guard let self, let window = self.chevron.window else { return .zero }
+            return window.convertToScreen(self.chevron.convert(self.chevron.bounds, to: nil))
+        }
     }
 
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    /// Keeps the chevron highlighted while the layout grid is open.
+    func setLayoutsOpen(_ open: Bool) {
+        chevron.isLatched = open
+    }
 
     func show(at origin: CGPoint) {
         setFrameOrigin(origin)
@@ -75,30 +108,30 @@ final class ToolbarPanel: NSPanel {
         }
         // The panel can vanish under the cursor (after a click), so no exit event arrives.
         // Clear the highlight so the buttons look normal when the panel comes back.
-        contentView?.subviews.compactMap { $0 as? TileButton }.forEach { $0.resetHighlight() }
+        contentView?.subviews.compactMap { $0 as? ToolbarButton }.forEach { $0.resetHighlight() }
     }
 }
 
 /// One icon button with a hover highlight.
 /// Responds to the first click even though Tilty is never the active app.
-final class TileButton: NSView {
+final class ToolbarButton: NSView {
 
-    private let action: TileAction
-    private let onClick: (TileAction) -> Void
+    private let onClick: () -> Void
     private let imageView = NSImageView()
     private var isHovered = false { didSet { updateLook() } }
     private var isPressed = false { didSet { updateLook() } }
+    /// Stays highlighted, for a button whose menu is open.
+    var isLatched = false { didSet { updateLook() } }
 
-    init(action: TileAction, onClick: @escaping (TileAction) -> Void) {
-        self.action = action
+    init(symbolName: String, title: String, pointSize: CGFloat = 14, weight: NSFont.Weight = .medium, onClick: @escaping () -> Void) {
         self.onClick = onClick
         super.init(frame: .zero)
 
         wantsLayer = true
         layer?.cornerRadius = 5
 
-        let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        imageView.image = NSImage(systemSymbolName: action.symbolName, accessibilityDescription: action.title)?
+        let config = NSImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
+        imageView.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: title)?
             .withSymbolConfiguration(config)
         imageView.imageScaling = .scaleProportionallyDown
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -108,10 +141,10 @@ final class TileButton: NSView {
             imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
 
-        toolTip = action.title
+        toolTip = title
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
-        setAccessibilityLabel(action.title)
+        setAccessibilityLabel(title)
         updateLook()
     }
 
@@ -139,7 +172,7 @@ final class TileButton: NSView {
         isPressed = false
         let point = convert(event.locationInWindow, from: nil)
         if wasPressed && bounds.contains(point) {
-            onClick(action)
+            onClick()
         }
     }
 
@@ -155,9 +188,9 @@ final class TileButton: NSView {
 
     private func updateLook() {
         effectiveAppearance.performAsCurrentDrawingAppearance {
-            let highlight: CGFloat = isPressed ? 0.22 : (isHovered ? 0.12 : 0)
+            let highlight: CGFloat = isPressed ? 0.22 : ((isHovered || isLatched) ? 0.12 : 0)
             layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(highlight).cgColor
-            imageView.contentTintColor = isHovered ? .labelColor : .secondaryLabelColor
+            imageView.contentTintColor = (isHovered || isLatched) ? .labelColor : .secondaryLabelColor
         }
     }
 }

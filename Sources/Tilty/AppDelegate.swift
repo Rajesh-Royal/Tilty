@@ -11,7 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var permissionTimer: Timer?
 
-    private var previewPanel: ToolbarPanel?
+    private var previewPanels: [NSPanel] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setUpStatusItem()
@@ -48,13 +48,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return
         }
         let zoom = CGRect(x: bounds.minX + 48, y: bounds.minY + 6, width: 16, height: 16)
-        let panel = ToolbarPanel { NSLog("Tilty preview: clicked \($0.rawValue)") }
+        let panel = ToolbarPanel(
+            onAction: { NSLog("Tilty preview: clicked \($0.rawValue)") },
+            onLayouts: { _ in NSLog("Tilty preview: clicked layouts") }
+        )
         let origin = Geometry.toolbarOrigin(
             zoomButton: zoom, window: bounds, toolbarSize: ToolbarPanel.panelSize,
             placement: .afterTrafficLights, primaryScreenHeight: primaryHeight
         )
         panel.show(at: origin)
-        previewPanel = panel
+        previewPanels.append(panel)
+
+        // --preview-layouts also opens the layout grid and a sample window picker.
+        guard CommandLine.arguments.contains("--preview-layouts") else { return }
+        panel.setLayoutsOpen(true)
+        let grid = LayoutGridPanel { layout, zone in NSLog("Tilty preview: picked \(layout.id) zone \(zone)") }
+        grid.show(below: panel.frame)
+        previewPanels.append(grid)
+
+        if let screen = NSScreen.main {
+            let zone = Geometry.frame(forZone: SnapLayout.halves.zones[1], in: screen.visibleFrame)
+            let rows = NSWorkspace.shared.runningApplications
+                .filter { $0.activationPolicy == .regular }
+                .prefix(5)
+                .map { PickerRow(icon: $0.icon, title: $0.localizedName ?? "App", subtitle: "Sample window") }
+            let picker = AssistPanel(frame: zone.insetBy(dx: 10, dy: 10), rows: Array(rows)) { NSLog("Tilty preview: chose row \($0)") }
+            picker.orderFrontRegardless()
+            previewPanels.append(picker)
+        }
     }
 
     // MARK: - Permission
@@ -126,6 +147,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         pause.isEnabled = trusted
         menu.addItem(pause)
 
+        let suggest = item("Suggest Windows After Left or Right", #selector(toggleSuggest))
+        suggest.state = preferences.suggestAfterHalves ? .on : .off
+        suggest.isEnabled = trusted
+        menu.addItem(suggest)
+
         if trusted, let app = controller.tracker.currentApp, let bundleID = app.bundleIdentifier {
             let name = app.localizedName ?? bundleID
             let current = preferences.placement(forBundleID: bundleID)
@@ -176,6 +202,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         preferences.isPaused.toggle()
         controller.refresh()
         updateStatusIcon()
+    }
+
+    @objc private func toggleSuggest() {
+        preferences.suggestAfterHalves.toggle()
     }
 
     @objc private func choosePlacement(_ sender: NSMenuItem) {
