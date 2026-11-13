@@ -253,8 +253,44 @@
       .win.back { display: none; }
     }
 
+
+    /* First visit hint: a tapping hand and pings on the Fill button */
+    .hint { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; }
+    .hint[hidden] { display: none; }
+    .ping {
+      position: absolute; width: 40px; height: 32px; margin: -16px 0 0 -20px;
+      border-radius: 9px; border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(79,127,232,.5), 0 0 12px rgba(255,255,255,.7);
+      animation: ping 1.6s cubic-bezier(0,0,.2,1) infinite;
+    }
+    .ping + .ping { animation-delay: .8s; }
+    .hand {
+      position: absolute; width: 30px; height: 36px; margin: 2px 0 0 -9px;
+      filter: drop-shadow(0 3px 4px rgba(0,0,0,.35));
+      animation: tap 1.6s ease-in-out infinite;
+      transform-origin: 9px 0;
+    }
+    .hint-label {
+      position: absolute; margin: 44px 0 0 -6px; white-space: nowrap;
+      background: #1d1b3a; color: #fff; font-size: 13px; font-weight: 600;
+      padding: 5px 10px; border-radius: 8px;
+      box-shadow: 0 6px 16px -6px rgba(0,0,0,.5);
+    }
+    @keyframes ping {
+      0% { transform: scale(1); opacity: .95; }
+      75%, 100% { transform: scale(1.9); opacity: 0; }
+    }
+    @keyframes tap {
+      0%, 100% { transform: translate(6px, 10px); }
+      45% { transform: translate(6px, 10px); }
+      60% { transform: translate(0, 0) scale(.94); }
+      75% { transform: translate(2px, 4px); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .win, .tilty { transition: none; }
+      .ping, .hand { animation: none; }
+      .ping + .ping { display: none; }
     }
   </style>
 </head>
@@ -314,6 +350,31 @@
                 <div class="main"><div class="bar" style="width:45%; height:12px; background:#dedee6"></div><div class="bar" style="width:85%"></div><div class="bar" style="width:72%"></div><div class="bar" style="width:78%"></div><div class="bar" style="width:60%"></div></div>
               </div>
             </div>
+          </div>
+
+          <div class="hint" id="hint" aria-hidden="true">
+            <span class="ping"></span><span class="ping"></span>
+            <svg class="hand" viewBox="0 0 24 29">
+              <g fill="#111" stroke="#111" stroke-width="2.6" stroke-linejoin="round">
+                <rect x="7" y="1" width="4.4" height="15" rx="2.2"/>
+                <rect x="11.2" y="8.6" width="4.2" height="8" rx="2.1"/>
+                <rect x="15.2" y="9.8" width="4.2" height="7" rx="2.1"/>
+                <rect x="4.6" y="12.5" width="16.6" height="13.5" rx="5"/>
+                <rect x="1.4" y="12.6" width="4.4" height="9" rx="2.2" transform="rotate(-28 3.6 17)"/>
+              </g>
+              <g fill="#fff">
+                <rect x="7" y="1" width="4.4" height="15" rx="2.2"/>
+                <rect x="11.2" y="8.6" width="4.2" height="8" rx="2.1"/>
+                <rect x="15.2" y="9.8" width="4.2" height="7" rx="2.1"/>
+                <rect x="4.6" y="12.5" width="16.6" height="13.5" rx="5"/>
+                <rect x="1.4" y="12.6" width="4.4" height="9" rx="2.2" transform="rotate(-28 3.6 17)"/>
+              </g>
+              <g stroke="#111" stroke-width="1" stroke-linecap="round">
+                <line x1="11.3" y1="12.8" x2="11.3" y2="16"/>
+                <line x1="15.3" y1="13.4" x2="15.3" y2="16.2"/>
+              </g>
+            </svg>
+            <span class="hint-label">Click to try</span>
           </div>
 
           <div class="dock" aria-hidden="true">
@@ -426,8 +487,31 @@ scripts/build-app.sh --install</code></pre>
         status.textContent = messages[name];
       }
 
+      // First visit hint. Points at the Fill button until the visitor clicks any button.
+      var hint = document.getElementById('hint');
+      var desktop = win.closest('.desktop');
+      var seen = false;
+      try { seen = localStorage.getItem('tilty-demo-clicked') === '1'; } catch (e) {}
+      function placeHint() {
+        if (hint.hidden) return;
+        var d = desktop.getBoundingClientRect();
+        var b = buttons[0].getBoundingClientRect();
+        hint.style.transform = 'translate(' + (b.left + b.width / 2 - d.left) + 'px,' + (b.top + b.height / 2 - d.top) + 'px)';
+      }
+      function dismissHint() {
+        if (hint.hidden) return;
+        hint.hidden = true;
+        try { localStorage.setItem('tilty-demo-clicked', '1'); } catch (e) {}
+      }
+      if (seen) { hint.hidden = true; } else {
+        placeHint();
+        window.addEventListener('resize', placeHint);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeHint);
+      }
+
       buttons.forEach(function (button) {
         button.addEventListener('click', function () {
+          dismissHint();
           var action = button.dataset.action;
           if (current === action) {
             current = null;
