@@ -170,6 +170,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         menu.addItem(suggest)
 
+        let animate = NSMenuItem()
+        animate.view = MenuSwitchView(
+            title: "Animate Window Moves",
+            isOn: preferences.animateMoves,
+            isEnabled: trusted
+        ) { [weak self] isOn in
+            self?.preferences.animateMoves = isOn
+        }
+        menu.addItem(animate)
+
         if trusted, let app = controller.tracker.currentApp, let bundleID = app.bundleIdentifier {
             let name = app.localizedName ?? bundleID
             let current = preferences.placement(forBundleID: bundleID)

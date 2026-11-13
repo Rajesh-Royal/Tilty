@@ -271,13 +271,15 @@ final class SnapAssistSession {
     private var candidates: [WindowCandidate]
     private var monitor: DismissMonitor?
     private let onFinish: () -> Void
+    private let animated: Bool
 
     /// Returns nil when there is nothing to offer.
-    init?(zoneFrames: [CGRect], excluding: Set<WindowKey>, onFinish: @escaping () -> Void) {
+    init?(zoneFrames: [CGRect], excluding: Set<WindowKey>, animated: Bool, onFinish: @escaping () -> Void) {
         let found = WindowCatalog.candidates(excluding: excluding)
         guard !zoneFrames.isEmpty, !found.isEmpty else { return nil }
         zones = zoneFrames.map { Zone(frame: $0, panel: nil) }
         candidates = found
+        self.animated = animated
         self.onFinish = onFinish
     }
 
@@ -318,7 +320,13 @@ final class SnapAssistSession {
         let zone = zones.remove(at: zoneIndex)
         zone.panel?.orderOut(nil)
 
-        WindowMover.apply(cocoaFrame: zone.frame, to: candidate.window, appElement: candidate.appElement, primaryScreenHeight: primaryHeight)
+        WindowMover.move(
+            cocoaFrame: zone.frame,
+            to: candidate.window,
+            appElement: candidate.appElement,
+            primaryScreenHeight: primaryHeight,
+            animated: animated
+        )
         WindowCatalog.raise(candidate)
 
         if zones.isEmpty || candidates.isEmpty {

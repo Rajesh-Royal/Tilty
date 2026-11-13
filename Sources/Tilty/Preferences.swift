@@ -8,6 +8,7 @@ final class Preferences {
         static let paused = "paused"
         static let placementOverrides = "placementOverrides"
         static let suggestAfterHalves = "suggestAfterHalves"
+        static let animateMoves = "animateMoves"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -23,6 +24,12 @@ final class Preferences {
     var suggestAfterHalves: Bool {
         get { defaults.bool(forKey: Key.suggestAfterHalves) }
         set { defaults.set(newValue, forKey: Key.suggestAfterHalves) }
+    }
+
+    /// Slide windows into place instead of snapping. On by default.
+    var animateMoves: Bool {
+        get { defaults.object(forKey: Key.animateMoves) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.animateMoves) }
     }
 
     var placementOverrides: [String: ToolbarPlacement] {

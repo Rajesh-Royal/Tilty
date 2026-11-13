@@ -161,34 +161,36 @@ final class TiltyController {
         let key = focused.key
         let frame = history.resolve(key: key, action: action, current: current, target: target)
 
-        WindowMover.apply(
-            cocoaFrame: frame,
-            to: focused.window,
-            appElement: focused.appElement,
-            primaryScreenHeight: primaryHeight
-        )
-
         // Optional: after Left or Right, offer windows for the other side.
         // Not after a second click that restores the window.
         let leftover = SnapLayout.leftover(after: action)
+        var zoneFrames: [CGRect] = []
         if preferences.suggestAfterHalves, frame == target, !leftover.isEmpty {
             let visible = screens[index].visibleFrame
-            let zoneFrames = leftover.map { Geometry.frame(forZone: $0, in: visible) }
-            let placed = focused.key
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-                MainActor.assumeIsolated { self?.startAssist(zoneFrames: zoneFrames, excluding: [placed]) }
-            }
+            zoneFrames = leftover.map { Geometry.frame(forZone: $0, in: visible) }
         }
 
-        // Apps can clamp sizes or finish resizing a moment later.
-        // Remember what they actually settled on so a second click still restores.
         let window = focused.window
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            MainActor.assumeIsolated {
-                guard let self, let actual = window.frame,
-                      let height = NSScreen.screens.first?.frame.height else { return }
-                self.history.recordApplied(key: key, frame: Geometry.flip(actual, primaryScreenHeight: height))
-                self.refresh()
+        WindowMover.move(
+            cocoaFrame: frame,
+            to: window,
+            appElement: focused.appElement,
+            primaryScreenHeight: primaryHeight,
+            animated: preferences.animateMoves
+        ) { [weak self] in
+            // Apps can clamp sizes or finish resizing a moment later.
+            // Remember what they actually settled on so a second click still restores.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    if let actual = window.frame, let height = NSScreen.screens.first?.frame.height {
+                        self.history.recordApplied(key: key, frame: Geometry.flip(actual, primaryScreenHeight: height))
+                    }
+                    self.refresh()
+                    if !zoneFrames.isEmpty {
+                        self.startAssist(zoneFrames: zoneFrames, excluding: [key])
+                    }
+                }
             }
         }
     }
@@ -242,13 +244,19 @@ final class TiltyController {
         let visible = screens[screenIndex].visibleFrame
 
         let frame = Geometry.frame(forZone: layout.zones[index], in: visible)
-        WindowMover.apply(cocoaFrame: frame, to: target.window, appElement: target.appElement, primaryScreenHeight: primaryHeight)
-
         let rest = layout.remainingZones(after: index).map { Geometry.frame(forZone: $0, in: visible) }
-        guard !rest.isEmpty else { return }
         let placed = target.key
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-            MainActor.assumeIsolated { self?.startAssist(zoneFrames: rest, excluding: [placed]) }
+        WindowMover.move(
+            cocoaFrame: frame,
+            to: target.window,
+            appElement: target.appElement,
+            primaryScreenHeight: primaryHeight,
+            animated: preferences.animateMoves
+        ) { [weak self] in
+            guard !rest.isEmpty else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                MainActor.assumeIsolated { self?.startAssist(zoneFrames: rest, excluding: [placed]) }
+            }
         }
     }
 
@@ -256,7 +264,7 @@ final class TiltyController {
 
     private func startAssist(zoneFrames: [CGRect], excluding: Set<WindowKey>) {
         endAssist()
-        let session = SnapAssistSession(zoneFrames: zoneFrames, excluding: excluding) { [weak self] in
+        let session = SnapAssistSession(zoneFrames: zoneFrames, excluding: excluding, animated: preferences.animateMoves) { [weak self] in
             self?.assist = nil
         }
         assist = session
