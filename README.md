@@ -92,3 +92,9 @@ To change the README animation, edit `scripts/make-demo-svg.py` and run `python3
 
 - Drag to the screen edge to snap. macOS already does this (System Settings > Desktop & Dock > "Drag windows to screen edges to tile").
 - Keyboard shortcuts. The whole point is one click on the trackpad.
+
+## License
+
+Tilty is free for personal and other noncommercial use. You can use it, share it and change it. You can't use it or sell it for commercial purposes.
+
+It's licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE.md).

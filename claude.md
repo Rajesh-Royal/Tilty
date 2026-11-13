@@ -1,0 +1,2 @@
+- never put powered by claude in commit footer
+- use conventional commit style, no verbose
