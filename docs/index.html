@@ -266,16 +266,15 @@
       .titlebar { height: 34px; padding-left: 9px; gap: 4px; }
       .lights { gap: 5px; }
       .lights i { width: 10px; height: 10px; }
-      .tilty button { width: 30px; height: 26px; }
+      .tilty button { width: 27px; height: 24px; }
       .content { height: calc(100% - 34px); }
       .side { padding: 10px 8px; }
       .main { padding: 12px; }
-      .win.back { display: none; }
     }
 
 
     /* First visit hint: a tapping hand and pings on the Fill button */
-    .hint { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; }
+    .hint { position: absolute; left: 0; top: 0; z-index: 1002; pointer-events: none; }
     .hint[hidden] { display: none; }
     .ping {
       position: absolute; width: 40px; height: 32px; margin: -16px 0 0 -20px;
@@ -326,6 +325,86 @@
     .hero .hero-text > p.version { font-size: .95rem; margin: .8rem 0 0; }
     .demo { margin-top: 0; }
     @media (max-width: 900px) { .hero-split { grid-template-columns: 1fr; } }
+
+    /* More windows, layouts grid and window picker */
+    .desktop { --tile-w: 66px; --tile-h: 42px; }
+    .win { cursor: default; }
+    .win:not(.active) .lights i { background: #c7c7cc; }
+    .win:not(.active) .titlebar { background: #f3f3f5; }
+    .titlebar { overflow: hidden; }
+    .url { flex: 0 1 40%; min-width: 0; height: 18px; margin: 0 auto; border-radius: 6px; background: #fff; box-shadow: inset 0 0 0 1px #dcdce2; }
+    .web { flex-direction: column; padding: 14px; gap: 0; }
+    .web .banner { height: 42%; border-radius: 8px; margin-bottom: 14px; background: linear-gradient(120deg, #d9e8ff, #efe3ff); }
+    .mail .side { width: 38%; max-width: none; background: #fff; padding: 10px; }
+    .mail .item { height: 26px; border-radius: 6px; margin-bottom: 8px; background: #f0f0f4; position: relative; }
+    .mail .item.unread::before { content: ""; position: absolute; left: 6px; top: 10px; width: 6px; height: 6px; border-radius: 50%; background: #0a84ff; }
+    .mail .item.sel { background: #0a84ff; opacity: .85; }
+    .chat { flex-direction: column; padding: 14px; gap: 9px; background: #fff; }
+    .bubble { height: 20px; border-radius: 11px; background: #e9e9eb; display: block; }
+    .bubble.out { align-self: flex-end; background: #34c759; opacity: .9; }
+
+    .tilty .sep { width: 1px; height: 16px; align-self: center; background: rgba(0,0,0,.16); margin: 0 3px; flex: none; }
+    .tilty button.more { width: 26px; }
+    .tilty button.more svg { width: 10px; height: 10px; }
+    .tilty button.more[aria-expanded="true"] { background: rgba(0,0,0,.12); color: #000; }
+
+    .grid-pop {
+      position: absolute; z-index: 1001; left: 0; top: 0;
+      display: grid; grid-template-columns: repeat(3, var(--tile-w)); gap: 6px; padding: 8px;
+      background: rgba(248,248,252,.88);
+      backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      border-radius: 12px;
+      box-shadow: 0 14px 30px -12px rgba(20,16,60,.55), 0 0 0 .5px rgba(0,0,0,.2);
+    }
+    .grid-pop[hidden], .picker[hidden] { display: none; }
+    .layout {
+      position: relative; width: var(--tile-w); height: var(--tile-h);
+      border-radius: 7px; background: rgba(0,0,0,.05); box-shadow: inset 0 0 0 1px rgba(0,0,0,.1);
+    }
+    .zone {
+      position: absolute; border: 0; padding: 0; border-radius: 3px; cursor: pointer;
+      background: rgba(0,0,0,.2);
+    }
+    .zone:hover, .zone:focus-visible { background: var(--blue); outline: none; }
+
+    .picker {
+      position: absolute; z-index: 1000;
+      display: flex; flex-direction: column; gap: 7px; padding: 10px; overflow: hidden;
+      background: rgba(30,30,40,.74);
+      backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border-radius: 12px; color: #fff;
+      box-shadow: 0 16px 36px -14px rgba(0,0,0,.6), 0 0 0 .5px rgba(255,255,255,.2) inset;
+      font-family: system-ui, -apple-system, sans-serif;
+      animation: pop .18s ease-out;
+    }
+    .picker h4 { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .picker .rows { display: grid; gap: 5px; align-content: start; overflow-y: auto; min-height: 0; }
+    .picker .row {
+      display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 8px; align-items: center;
+      width: 100%; padding: 6px 8px; border: 0; border-radius: 8px; text-align: left; cursor: pointer;
+      background: rgba(255,255,255,.09); color: #fff; font: inherit;
+    }
+    .picker .row:hover, .picker .row:focus-visible { background: rgba(255,255,255,.22); outline: none; }
+    .picker .ic { grid-row: span 2; width: 22px; height: 22px; border-radius: 6px; }
+    .picker .t { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
+    .picker .s { font-size: 11px; opacity: .65; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @keyframes pop { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+    .hint.moving { opacity: 0; }
+    .hint { transition: opacity .15s; }
+    @media (prefers-reduced-motion: reduce) { .picker { animation: none; } }
+    @media (max-width: 760px) {
+      .desktop { --tile-w: 50px; --tile-h: 32px; }
+      .tilty button.more { width: 20px; }
+      .tilty .sep { margin: 0 2px; }
+      .picker { padding: 6px; gap: 4px; border-radius: 9px; }
+      .picker h4 { font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .picker h4 .long { display: none; }
+      .picker .rows { gap: 3px; }
+      .picker .row { grid-template-columns: 16px minmax(0, 1fr); column-gap: 6px; padding: 4px 6px; border-radius: 6px; }
+      .picker .ic { width: 16px; height: 16px; border-radius: 4px; }
+      .picker .t { font-size: 10.5px; }
+      .picker .s { font-size: 9.5px; }
+    }
   </style>
 </head>
 <body>
@@ -364,12 +443,20 @@
             </span>
           </div>
 
-          <div class="screen">
-            <div class="win back" style="--x:58%; --y:7%; --w:34%; --h:46%;" aria-hidden="true">
-              <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span></div>
+          <div class="screen" id="screen">
+            <div class="win" data-name="Messages" data-title="Family" data-color="#34c759" style="--x:3%; --y:30%; --w:30%; --h:62%;">
+              <div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
+              <div class="content chat" aria-hidden="true"><span class="bubble" style="width:62%"></span><span class="bubble out" style="width:48%"></span><span class="bubble" style="width:40%"></span><span class="bubble out" style="width:56%"></span></div>
             </div>
-
-            <div class="win front" id="win" style="--x:15%; --y:10%; --w:52%; --h:66%;">
+            <div class="win" data-name="Mail" data-title="Inbox" data-color="#0a84ff" style="--x:50%; --y:42%; --w:44%; --h:54%;">
+              <div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
+              <div class="content mail" aria-hidden="true"><div class="side"><div class="item sel"></div><div class="item unread"></div><div class="item unread"></div><div class="item"></div></div><div class="main"><div class="bar" style="width:50%; height:12px; background:#dedee6"></div><div class="bar" style="width:90%"></div><div class="bar" style="width:80%"></div><div class="bar" style="width:66%"></div></div></div>
+            </div>
+            <div class="win" data-name="Safari" data-title="Tilty: one click window tiling" data-color="#1e9bf0" style="--x:57%; --y:4%; --w:39%; --h:46%;">
+              <div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="url" aria-hidden="true"></span></div>
+              <div class="content web" aria-hidden="true"><div class="banner"></div><div class="bar" style="width:72%"></div><div class="bar" style="width:58%"></div><div class="bar" style="width:64%"></div></div>
+            </div>
+            <div class="win active" id="win" data-name="Notes" data-title="Groceries" data-color="#ffcc00" style="--x:15%; --y:10%; --w:52%; --h:66%;">
               <div class="titlebar">
                 <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
                 <div class="tilty" role="toolbar" aria-label="Tilty">
@@ -382,6 +469,10 @@
                   <button type="button" data-action="right" aria-pressed="false" title="Right half" aria-label="Right half">
                     <svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.5"/><rect x="9.2" y="3.2" width="5.6" height="7.6" rx="1.2" fill="currentColor"/></svg>
                   </button>
+                  <span class="sep" aria-hidden="true"></span>
+                  <button type="button" class="more" id="more" aria-expanded="false" aria-controls="grid" title="More layouts" aria-label="More layouts">
+                    <svg viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5 5 7l3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
                 </div>
               </div>
               <div class="content" aria-hidden="true">
@@ -389,6 +480,7 @@
                 <div class="main"><div class="bar" style="width:45%; height:12px; background:#dedee6"></div><div class="bar" style="width:85%"></div><div class="bar" style="width:72%"></div><div class="bar" style="width:78%"></div><div class="bar" style="width:60%"></div></div>
               </div>
             </div>
+            <div class="grid-pop" id="grid" role="group" aria-label="Layouts" hidden></div>
           </div>
 
           <div class="hint" id="hint" aria-hidden="true">
@@ -417,11 +509,11 @@
           </div>
 
           <div class="dock" aria-hidden="true">
-            <span style="background:#5ac8fa"></span><span style="background:#34c759"></span><span style="background:#ff9f0a"></span><span style="background:#ff375f"></span><span style="background:#bf5af2"></span><span style="background:#64d2ff"></span><span style="background:#8e8e93"></span>
+            <span style="background:#1e9bf0"></span><span style="background:#0a84ff"></span><span style="background:#34c759"></span><span style="background:#ffcc00"></span><span style="background:#ff375f"></span><span style="background:#bf5af2"></span><span style="background:#8e8e93"></span>
           </div>
         </div>
         <div class="demo-note">
-          <span><strong>Try it.</strong> Click the buttons next to the traffic lights.</span>
+          <span><strong>Try it.</strong> Click the buttons next to the traffic lights, or the arrow for more layouts.</span>
           <span id="status" aria-live="polite">Click the same button twice to put the window back.</span>
         </div>
       </div>
@@ -492,73 +584,280 @@
 
   <script>
     (function () {
-      var win = document.getElementById('win');
+      var screen = document.getElementById('screen');
+      var desktop = screen.closest('.desktop');
+      var wins = Array.prototype.slice.call(screen.querySelectorAll('.win'));
+      var toolbar = screen.querySelector('.tilty');
+      var buttons = toolbar.querySelectorAll('button[data-action]');
+      var more = document.getElementById('more');
+      var grid = document.getElementById('grid');
       var status = document.getElementById('status');
-      var buttons = win.querySelectorAll('.tilty button');
-      var frames = {
-        original: { x: '15%', y: '10%', w: '52%', h: '66%' },
-        fill:     { x: '0%',  y: '0%',  w: '100%', h: '100%' },
-        left:     { x: '0%',  y: '0%',  w: '50%',  h: '100%' },
-        right:    { x: '50%', y: '0%',  w: '50%',  h: '100%' }
+      var hint = document.getElementById('hint');
+      var hintLabel = hint.querySelector('.hint-label');
+      var appName = desktop.querySelector('.menubar .app');
+
+      // Frames are percents of the screen area, top-left origin, like the app's unit zones.
+      var quick = {
+        fill:  { x: 0,  y: 0, w: 100, h: 100 },
+        left:  { x: 0,  y: 0, w: 50,  h: 100 },
+        right: { x: 50, y: 0, w: 50,  h: 100 }
       };
+      var layouts = [
+        ['Two halves', [[0, 0, 1/2, 1], [1/2, 0, 1/2, 1]]],
+        ['Two thirds and one third', [[0, 0, 2/3, 1], [2/3, 0, 1/3, 1]]],
+        ['One third and two thirds', [[0, 0, 1/3, 1], [1/3, 0, 2/3, 1]]],
+        ['Three columns', [[0, 0, 1/3, 1], [1/3, 0, 1/3, 1], [2/3, 0, 1/3, 1]]],
+        ['One tall and two stacked', [[0, 0, 1/2, 1], [1/2, 0, 1/2, 1/2], [1/2, 1/2, 1/2, 1/2]]],
+        ['Four quarters', [[0, 0, 1/2, 1/2], [1/2, 0, 1/2, 1/2], [0, 1/2, 1/2, 1/2], [1/2, 1/2, 1/2, 1/2]]]
+      ];
+
+      var state = new Map();
+      var top = 0;
+      wins.forEach(function (w) {
+        w.style.zIndex = ++top;
+        state.set(w, { frame: readFrame(w), last: null, before: null });
+      });
+      var active = document.getElementById('win');
+
+      function readFrame(w) {
+        return {
+          x: parseFloat(w.style.getPropertyValue('--x')), y: parseFloat(w.style.getPropertyValue('--y')),
+          w: parseFloat(w.style.getPropertyValue('--w')), h: parseFloat(w.style.getPropertyValue('--h'))
+        };
+      }
+      function unitToFrame(z) { return { x: z[0] * 100, y: z[1] * 100, w: z[2] * 100, h: z[3] * 100 }; }
+
+      var moveTimer = null;
+      function setFrame(w, f, tiled) {
+        state.get(w).frame = f;
+        w.classList.add('moving');
+        hint.classList.add('moving');
+        ['x', 'y', 'w', 'h'].forEach(function (k) { w.style.setProperty('--' + k, f[k] + '%'); });
+        w.classList.toggle('tiled', tiled);
+        clearTimeout(moveTimer);
+        moveTimer = setTimeout(function () {
+          wins.forEach(function (o) { o.classList.remove('moving'); });
+          hint.classList.remove('moving');
+          placeHint();
+        }, 420);
+      }
+
+      function activate(w) {
+        if (w === active) return;
+        active.classList.remove('active');
+        w.classList.add('active');
+        w.style.zIndex = ++top;
+        var lights = w.querySelector('.lights');
+        lights.parentNode.insertBefore(toolbar, lights.nextSibling);
+        active = w;
+        appName.textContent = w.dataset.name;
+        closeGrid();
+        updatePressed();
+        placeHint();
+      }
+
+      function updatePressed() {
+        var last = state.get(active).last;
+        buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.action === last)); });
+      }
+
+      // Quick buttons. Click the same one twice to put the window back.
       var messages = {
         fill: 'Filled. Click Fill again to put it back.',
         left: 'Left half. Click it again to put it back.',
-        right: 'Right half. Click it again to put it back.',
-        original: 'Back where it was.'
+        right: 'Right half. Click it again to put it back.'
       };
-      var current = null;
-      var timer = null;
-
-      function apply(name) {
-        var f = frames[name];
-        win.classList.add('moving');
-        win.style.setProperty('--x', f.x);
-        win.style.setProperty('--y', f.y);
-        win.style.setProperty('--w', f.w);
-        win.style.setProperty('--h', f.h);
-        win.classList.toggle('tiled', name !== 'original');
-        clearTimeout(timer);
-        timer = setTimeout(function () { win.classList.remove('moving'); }, 420);
-        buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.action === name)); });
-        status.textContent = messages[name];
-      }
-
-      // First visit hint. Points at the Fill button until the visitor clicks any button.
-      var hint = document.getElementById('hint');
-      var desktop = win.closest('.desktop');
-      var seen = false;
-      try { seen = localStorage.getItem('tilty-demo-clicked') === '1'; } catch (e) {}
-      function placeHint() {
-        if (hint.hidden) return;
-        var d = desktop.getBoundingClientRect();
-        var b = buttons[0].getBoundingClientRect();
-        hint.style.transform = 'translate(' + (b.left + b.width / 2 - d.left) + 'px,' + (b.top + b.height / 2 - d.top) + 'px)';
-      }
-      function dismissHint() {
-        if (hint.hidden) return;
-        hint.hidden = true;
-        try { localStorage.setItem('tilty-demo-clicked', '1'); } catch (e) {}
-      }
-      if (seen) { hint.hidden = true; } else {
-        placeHint();
-        window.addEventListener('resize', placeHint);
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeHint);
-      }
-
       buttons.forEach(function (button) {
         button.addEventListener('click', function () {
-          dismissHint();
           var action = button.dataset.action;
-          if (current === action) {
-            current = null;
-            apply('original');
+          closeGrid();
+          closePicker();
+          var s = state.get(active);
+          if (s.last === action) {
+            setFrame(active, s.before, false);
+            s.last = null; s.before = null;
+            status.textContent = 'Back where it was.';
           } else {
-            current = action;
-            apply(action);
+            if (!s.last) s.before = s.frame;
+            s.last = action;
+            setFrame(active, quick[action], true);
+            status.textContent = messages[action];
           }
+          updatePressed();
+          advanceHint('fill');
         });
       });
+
+      // Layout grid from the arrow.
+      function zoneName(z) {
+        var h = z[2] === 1 ? '' : (z[0] === 0 ? 'left' : (z[0] + z[2] > 0.99 ? 'right' : 'middle'));
+        var v = z[3] === 1 ? '' : (z[1] === 0 ? 'top' : 'bottom');
+        return (v && h) ? v + ' ' + h : (v || h);
+      }
+      layouts.forEach(function (layout) {
+        var tile = document.createElement('div');
+        tile.className = 'layout';
+        tile.setAttribute('role', 'group');
+        tile.setAttribute('aria-label', layout[0]);
+        layout[1].forEach(function (z, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'zone';
+          b.setAttribute('aria-label', layout[0] + ', ' + zoneName(z));
+          b.style.left = 'calc(4px + (100% - 8px) * ' + z[0] + ' + 1.5px)';
+          b.style.top = 'calc(4px + (100% - 8px) * ' + z[1] + ' + 1.5px)';
+          b.style.width = 'calc((100% - 8px) * ' + z[2] + ' - 3px)';
+          b.style.height = 'calc((100% - 8px) * ' + z[3] + ' - 3px)';
+          b.addEventListener('click', function () { pick(layout[1], i); });
+          tile.appendChild(b);
+        });
+        grid.appendChild(tile);
+      });
+
+      function openGrid(fromKeyboard) {
+        closePicker();
+        grid.hidden = false;
+        more.setAttribute('aria-expanded', 'true');
+        var sr = screen.getBoundingClientRect();
+        var tr = toolbar.getBoundingClientRect();
+        var x = Math.min(Math.max(tr.left - sr.left, 6), sr.width - grid.offsetWidth - 6);
+        var y = Math.min(tr.bottom - sr.top + 6, sr.height - grid.offsetHeight - 6);
+        grid.style.transform = 'translate(' + x + 'px,' + Math.max(y, 6) + 'px)';
+        status.textContent = 'Pick a layout, then the part of it where this window goes.';
+        if (fromKeyboard) grid.querySelector('.zone').focus();
+      }
+      function closeGrid() {
+        if (grid.hidden) return;
+        grid.hidden = true;
+        more.setAttribute('aria-expanded', 'false');
+      }
+      more.addEventListener('click', function (e) {
+        // Found the arrow, so no more hints.
+        advanceHint('fill');
+        advanceHint('more');
+        if (grid.hidden) openGrid(e.detail === 0); else closeGrid();
+      });
+
+      function pick(zones, index) {
+        var placed = active;
+        closeGrid();
+        var s = state.get(placed);
+        s.last = null; s.before = null;
+        setFrame(placed, unitToFrame(zones[index]), true);
+        updatePressed();
+        var rest = zones.filter(function (_, i) { return i !== index; });
+        if (rest.length) {
+          status.textContent = 'Now pick windows for the empty spaces, or click anywhere to skip.';
+          setTimeout(function () { openPicker(rest, placed); }, 380);
+        } else {
+          status.textContent = 'Done.';
+        }
+      }
+
+      // Window picker in each empty zone.
+      var pickers = [];
+      var candidates = [];
+      function openPicker(zones, placed) {
+        closePicker();
+        candidates = wins.filter(function (w) { return w !== placed; })
+          .sort(function (a, b) { return b.style.zIndex - a.style.zIndex; });
+        pickers = zones.map(function (z) { return { zone: z, el: null }; });
+        renderPickers();
+      }
+      function renderPickers() {
+        pickers.forEach(function (p, zi) {
+          if (p.el) p.el.remove();
+          var f = unitToFrame(p.zone);
+          var el = document.createElement('div');
+          el.className = 'picker';
+          el.setAttribute('role', 'dialog');
+          el.setAttribute('aria-label', 'Choose a window for this space');
+          el.style.left = 'calc(' + f.x + '% + 6px)';
+          el.style.top = 'calc(' + f.y + '% + 6px)';
+          el.style.width = 'calc(' + f.w + '% - 12px)';
+          el.style.height = 'calc(' + f.h + '% - 12px)';
+          var h = document.createElement('h4');
+          h.innerHTML = 'Choose a window<span class="long"> for this space</span>';
+          var rows = document.createElement('div');
+          rows.className = 'rows';
+          candidates.forEach(function (w) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'row';
+            b.innerHTML = '<span class="ic"></span><span class="t"></span><span class="s"></span>';
+            b.querySelector('.ic').style.background = w.dataset.color;
+            b.querySelector('.t').textContent = w.dataset.title;
+            b.querySelector('.s').textContent = w.dataset.name;
+            b.addEventListener('click', function () { choose(w, zi); });
+            rows.appendChild(b);
+          });
+          el.appendChild(h);
+          el.appendChild(rows);
+          screen.appendChild(el);
+          p.el = el;
+        });
+      }
+      function choose(w, zi) {
+        var p = pickers.splice(zi, 1)[0];
+        p.el.remove();
+        candidates = candidates.filter(function (c) { return c !== w; });
+        var s = state.get(w);
+        s.last = null; s.before = null;
+        setFrame(w, unitToFrame(p.zone), true);
+        activate(w);
+        if (!pickers.length || !candidates.length) {
+          closePicker();
+          status.textContent = 'All set. Click the arrow again to try another layout.';
+        } else {
+          renderPickers();
+        }
+      }
+      function closePicker() {
+        pickers.forEach(function (p) { if (p.el) p.el.remove(); });
+        pickers = [];
+      }
+
+      // Click a window to use it. Like the app, the buttons follow the window you're using.
+      // Any click outside the grid or the picker closes them, and so does Esc.
+      desktop.addEventListener('pointerdown', function (e) {
+        var inPicker = e.target.closest('.picker');
+        if (!e.target.closest('#grid') && !e.target.closest('#more')) closeGrid();
+        if (!inPicker && pickers.length) { closePicker(); status.textContent = 'Skipped. Click the arrow to try another layout.'; }
+        var w = e.target.closest('.win');
+        if (w && !inPicker) activate(w);
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (!grid.hidden) { closeGrid(); more.focus(); }
+        if (pickers.length) { closePicker(); status.textContent = 'Skipped.'; }
+      });
+
+      // First visit hint: first the Fill button, then the arrow for more layouts.
+      var stage = 'fill';
+      try {
+        var saved = localStorage.getItem('tilty-demo-hint');
+        if (saved) stage = saved;
+        else if (localStorage.getItem('tilty-demo-clicked') === '1') stage = 'more';
+      } catch (e) {}
+      function hintTarget() { return stage === 'fill' ? buttons[0] : (stage === 'more' ? more : null); }
+      function placeHint() {
+        var t = hintTarget();
+        hint.hidden = !t;
+        if (!t) return;
+        hintLabel.textContent = stage === 'fill' ? 'Click to try' : 'More layouts';
+        var d = desktop.getBoundingClientRect();
+        var b = t.getBoundingClientRect();
+        hint.style.transform = 'translate(' + (b.left + b.width / 2 - d.left) + 'px,' + (b.top + b.height / 2 - d.top) + 'px)';
+      }
+      function advanceHint(from) {
+        if (stage !== from) return;
+        stage = from === 'fill' ? 'more' : 'done';
+        try { localStorage.setItem('tilty-demo-hint', stage); } catch (e) {}
+        placeHint();
+      }
+      placeHint();
+      window.addEventListener('resize', placeHint);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeHint);
     })();
 
     // Show the latest released version next to the download button.
