@@ -97,6 +97,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self?.updateStatusIcon()
             }
         }
+        // Only checks a setting, so a late tick is fine. Let macOS group it with other wakeups.
+        timer.tolerance = 0.5
         RunLoop.main.add(timer, forMode: .common)
         permissionTimer = timer
         updateStatusIcon()
@@ -117,7 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func updateStatusIcon() {
         guard let button = statusItem?.button else { return }
         if Accessibility.isTrusted {
-            button.image = StatusIcon.make()
+            button.image = StatusIcon.image
             // Paused shows the same icon, dimmed.
             button.appearsDisabled = preferences.isPaused
         } else {
@@ -180,7 +182,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         menu.addItem(animate)
 
-        if trusted, let app = controller.tracker.currentApp, let bundleID = app.bundleIdentifier {
+        if trusted, let app = controller.currentApp, let bundleID = app.bundleIdentifier {
             let name = app.localizedName ?? bundleID
             let current = preferences.placement(forBundleID: bundleID)
             let submenu = NSMenu()
@@ -232,7 +234,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func togglePause() {
         preferences.isPaused.toggle()
-        controller.refresh()
+        controller.pauseChanged()
         updateStatusIcon()
     }
 

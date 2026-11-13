@@ -19,6 +19,9 @@ enum WindowMover {
     private static var running: [WindowKey: Slide] = [:]
     static let log = Logger(subsystem: "app.tilty.Tilty", category: "moves")
 
+    /// True while any animated move is running.
+    static var isSliding: Bool { !running.isEmpty }
+
     /// Moves a window to a frame given in Cocoa coordinates.
     /// `completion` runs once the window is at its final frame.
     static func move(

@@ -4,6 +4,9 @@ import AppKit
 /// Drawn in code because no SF Symbol has this exact layout.
 enum StatusIcon {
 
+    /// Drawn once and reused. As a template image it still follows light and dark menu bars.
+    @MainActor static let image = make()
+
     static func make(size: CGFloat = 18) -> NSImage {
         let image = NSImage(size: NSSize(width: size, height: size), flipped: true) { rect in
             let unit = rect.width / 18

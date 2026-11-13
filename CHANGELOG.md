@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.1
+
+### What's improved
+
+- **Lower idle overhead.** Tilty now pauses tracking while paused, when displays sleep, and when another user session is active. It also avoids repeated accessibility queries and unnecessary toolbar updates. In an idle VS Code measurement, CPU time fell from about 80 ms to 25 ms per 30 seconds; results vary by app and Mac.
+- **Smoother tracking.** Window-drag notifications are coalesced, and Tilty ignores geometry changes caused by its own animations. Window checks speed up while things are changing and back off after a few quiet seconds.
+- **Less background work.** Settings and the menu bar icon are reused, repeated app-event subscriptions are avoided, and failed subscriptions are retried less often.
+
+### Fixes
+
+- Closing a layout picker can no longer dismiss a newly opened picker because of a delayed click or Escape event.
+
+### Note
+
+Most apps report window changes immediately. For apps that do not, or changes such as hiding a toolbar that do not move the window, the backup check now runs less often after a quiet period; the toolbar may take up to about 1.4 seconds to catch up.
+
+### Updating
+
+Quit Tilty, replace it in Applications with the new one and open it. macOS may ask you to allow Accessibility access again after the update.
+
 ## 0.3.0
 
 ### What's new

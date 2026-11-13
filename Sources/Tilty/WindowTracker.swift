@@ -15,12 +15,20 @@ struct FocusedWindow {
     var key: WindowKey { WindowKey(element: window) }
 }
 
+/// What kind of change the tracker saw.
+enum TrackerEvent {
+    /// A window moved or resized. These arrive many times a second during a drag.
+    case geometry
+    /// Focus, app, screen or visibility changed.
+    case other
+}
+
 /// Follows the frontmost app and its focused window, and calls `onChange`
 /// whenever something that affects the toolbar might have changed.
 @MainActor
 final class WindowTracker {
 
-    var onChange: (() -> Void)?
+    var onChange: ((TrackerEvent) -> Void)?
 
     private(set) var currentApp: NSRunningApplication?
     private var appElement: AXUIElement?
@@ -28,6 +36,9 @@ final class WindowTracker {
     private var watchedWindow: AXUIElement?
     private var workspaceTokens: [NSObjectProtocol] = []
     private var appTokens: [NSObjectProtocol] = []
+    /// When the last observer for `currentApp` failed to attach. Limits retries for apps that never allow one.
+    private var lastFailedAttach: TimeInterval?
+    private let attachRetryDelay: TimeInterval = 3
 
     private let log = Logger(subsystem: "app.tilty.Tilty", category: "tracker")
 
@@ -52,6 +63,13 @@ final class WindowTracker {
         kAXUIElementDestroyedNotification,
     ]
 
+    private static let geometryNotifications: Set<String> = [
+        kAXWindowMovedNotification,
+        kAXWindowResizedNotification,
+        kAXMovedNotification,
+        kAXResizedNotification,
+    ]
+
     func start() {
         let center = NSWorkspace.shared.notificationCenter
         workspaceTokens.append(center.addObserver(
@@ -68,7 +86,7 @@ final class WindowTracker {
         appTokens.append(NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.onChange?() }
+            MainActor.assumeIsolated { self?.onChange?(.other) }
         })
 
         attach(to: NSWorkspace.shared.frontmostApplication)
@@ -82,11 +100,16 @@ final class WindowTracker {
         detach()
     }
 
-    /// Re-attaches if the observer could not be created earlier,
-    /// for example while an app was still launching.
+    /// Re-attaches if the frontmost app changed without a notification,
+    /// or if the observer could not be created earlier, for example while an app was still launching.
     func ensureAttached() {
         let frontmost = NSWorkspace.shared.frontmostApplication
-        if frontmost?.processIdentifier != currentApp?.processIdentifier || (currentApp != nil && observer == nil) {
+        if frontmost?.processIdentifier != currentApp?.processIdentifier {
+            attach(to: frontmost)
+        } else if currentApp != nil, observer == nil {
+            // Some apps never allow an observer. Retry now and then, not on every poll.
+            let now = ProcessInfo.processInfo.systemUptime
+            if let lastFailedAttach, now - lastFailedAttach < attachRetryDelay { return }
             attach(to: frontmost)
         }
     }
@@ -99,15 +122,21 @@ final class WindowTracker {
         guard let window = appElement.element(kAXFocusedWindowAttribute)
             ?? appElement.element(kAXMainWindowAttribute) else { return nil }
 
+        // Every attribute read is a round trip to the app, so read as little as possible.
+        // A window's role never changes, so the watched window does not need the check again.
+        let isWatched = CFEqualOptional(window, watchedWindow)
+
         // Only regular document windows. Dialogs, sheets, palettes and popovers are skipped.
-        guard window.string(kAXRoleAttribute) == kAXWindowRole,
-              window.string(kAXSubroleAttribute) == kAXStandardWindowSubrole else { return nil }
+        if !isWatched {
+            guard window.string(kAXRoleAttribute) == kAXWindowRole,
+                  window.string(kAXSubroleAttribute) == kAXStandardWindowSubrole else { return nil }
+        }
         if window.bool(kAXMinimizedAttribute) == true { return nil }
         if window.bool(AXName.fullScreen) == true { return nil }
 
         guard let frame = window.frame, frame.width >= 160, frame.height >= 60 else { return nil }
 
-        if !CFEqualOptional(window, watchedWindow) {
+        if !isWatched {
             watch(window: window)
         }
 
@@ -118,14 +147,24 @@ final class WindowTracker {
     // MARK: - Attaching
 
     private func attach(to app: NSRunningApplication?) {
+        // Same app, already observed. Adding notifications is a round trip each, so keep what works.
+        if let app, observer != nil, app.processIdentifier == currentApp?.processIdentifier {
+            onChange?(.other)
+            return
+        }
+
         detach()
 
         guard let app, app.processIdentifier != ProcessInfo.processInfo.processIdentifier else {
             currentApp = nil
-            onChange?()
+            lastFailedAttach = nil
+            onChange?(.other)
             return
         }
 
+        if app.processIdentifier != currentApp?.processIdentifier {
+            lastFailedAttach = nil
+        }
         currentApp = app
         let pid = app.processIdentifier
         let element = AXUIElementCreateApplication(pid)
@@ -143,9 +182,11 @@ final class WindowTracker {
 
         guard AXObserverCreate(pid, callback, &newObserver) == .success, let newObserver else {
             log.debug("Could not create observer for pid \(pid)")
-            onChange?()
+            lastFailedAttach = ProcessInfo.processInfo.systemUptime
+            onChange?(.other)
             return
         }
+        lastFailedAttach = nil
 
         let refcon = Unmanaged.passUnretained(self).toOpaque()
         for name in Self.appNotifications {
@@ -154,7 +195,7 @@ final class WindowTracker {
         CFRunLoopAddSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(newObserver), .commonModes)
         observer = newObserver
 
-        onChange?()
+        onChange?(.other)
     }
 
     private func detach() {
@@ -194,7 +235,7 @@ final class WindowTracker {
         if notification == kAXUIElementDestroyedNotification {
             watchedWindow = nil
         }
-        onChange?()
+        onChange?(Self.geometryNotifications.contains(notification) ? .geometry : .other)
     }
 }
 

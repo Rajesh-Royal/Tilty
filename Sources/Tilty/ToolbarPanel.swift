@@ -95,17 +95,19 @@ final class ToolbarPanel: NSPanel {
         chevron.isLatched = open
     }
 
+    /// Called on every refresh, so it only talks to the window server when something changed.
     func show(at origin: CGPoint) {
-        setFrameOrigin(origin)
+        if frame.origin != origin {
+            setFrameOrigin(origin)
+        }
         if !isVisible {
             orderFrontRegardless()
         }
     }
 
     func hide() {
-        if isVisible {
-            orderOut(nil)
-        }
+        guard isVisible else { return }
+        orderOut(nil)
         // The panel can vanish under the cursor (after a click), so no exit event arrives.
         // Clear the highlight so the buttons look normal when the panel comes back.
         contentView?.subviews.compactMap { $0 as? ToolbarButton }.forEach { $0.resetHighlight() }
@@ -118,10 +120,11 @@ final class ToolbarButton: NSView {
 
     private let onClick: () -> Void
     private let imageView = NSImageView()
-    private var isHovered = false { didSet { updateLook() } }
-    private var isPressed = false { didSet { updateLook() } }
+    // Each look change commits a layer update, so skip it when nothing changed.
+    private var isHovered = false { didSet { if oldValue != isHovered { updateLook() } } }
+    private var isPressed = false { didSet { if oldValue != isPressed { updateLook() } } }
     /// Stays highlighted, for a button whose menu is open.
-    var isLatched = false { didSet { updateLook() } }
+    var isLatched = false { didSet { if oldValue != isLatched { updateLook() } } }
 
     init(symbolName: String, title: String, pointSize: CGFloat = 14, weight: NSFont.Weight = .medium, onClick: @escaping () -> Void) {
         self.onClick = onClick

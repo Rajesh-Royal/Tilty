@@ -270,16 +270,23 @@ final class SnapAssistSession {
     private var zones: [Zone]
     private var candidates: [WindowCandidate]
     private var monitor: DismissMonitor?
+    private let onMoved: () -> Void
     private let onFinish: () -> Void
     private let animated: Bool
+    private var isFinished = false
 
     /// Returns nil when there is nothing to offer.
-    init?(zoneFrames: [CGRect], excluding: Set<WindowKey>, animated: Bool, onFinish: @escaping () -> Void) {
+    /// - Parameters:
+    ///   - onMoved: a chosen window reached its zone.
+    ///   - onFinish: the session closed. Runs once.
+    init?(zoneFrames: [CGRect], excluding: Set<WindowKey>, animated: Bool, onMoved: @escaping () -> Void, onFinish: @escaping () -> Void) {
+        guard !zoneFrames.isEmpty else { return nil }
         let found = WindowCatalog.candidates(excluding: excluding)
-        guard !zoneFrames.isEmpty, !found.isEmpty else { return nil }
+        guard !found.isEmpty else { return nil }
         zones = zoneFrames.map { Zone(frame: $0, panel: nil) }
         candidates = found
         self.animated = animated
+        self.onMoved = onMoved
         self.onFinish = onFinish
     }
 
@@ -291,6 +298,9 @@ final class SnapAssistSession {
     }
 
     func finish() {
+        // A queued Esc or click can arrive after the session already closed.
+        guard !isFinished else { return }
+        isFinished = true
         monitor?.stop()
         monitor = nil
         for zone in zones { zone.panel?.orderOut(nil) }
@@ -325,7 +335,8 @@ final class SnapAssistSession {
             to: candidate.window,
             appElement: candidate.appElement,
             primaryScreenHeight: primaryHeight,
-            animated: animated
+            animated: animated,
+            completion: onMoved
         )
         WindowCatalog.raise(candidate)
 
