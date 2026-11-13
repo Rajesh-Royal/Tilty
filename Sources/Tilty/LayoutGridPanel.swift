@@ -15,7 +15,8 @@ final class LayoutGridPanel: NSPanel {
     static let padding: CGFloat = 10
     static let gap: CGFloat = 8
 
-    static var panelSize: CGSize {
+    /// Size of the layout tiles area, without the Stage Manager notice.
+    static var gridSize: CGSize {
         let rows = (SnapLayout.all.count + columns - 1) / columns
         return CGSize(
             width: padding * 2 + tileSize.width * CGFloat(columns) + gap * CGFloat(columns - 1),
@@ -23,26 +24,46 @@ final class LayoutGridPanel: NSPanel {
         )
     }
 
-    init(onPick: @escaping (SnapLayout, Int) -> Void) {
+    /// - Parameters:
+    ///   - showStageManagerNotice: adds a warning under the layouts when Stage Manager is on.
+    init(showStageManagerNotice: Bool = false, onOpenSettings: @escaping () -> Void = {}, onPick: @escaping (SnapLayout, Int) -> Void) {
+        let grid = Self.gridSize
+        var notice: NSView?
+        var noticeHeight: CGFloat = 0
+        if showStageManagerNotice {
+            let view = makeStageManagerNotice(width: grid.width - Self.padding * 2 - 4, textColor: .secondaryLabelColor, onOpenSettings: onOpenSettings)
+            view.layoutSubtreeIfNeeded()
+            noticeHeight = view.fittingSize.height + Self.padding + 4
+            notice = view
+        }
+        let size = CGSize(width: grid.width, height: grid.height + noticeHeight)
+
         super.init(
-            contentRect: NSRect(origin: .zero, size: Self.panelSize),
+            contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: true
         )
         configureOverlayPanel(self)
 
-        let background = makeOverlayBackground(size: Self.panelSize, cornerRadius: 12)
+        let background = makeOverlayBackground(size: size, cornerRadius: 12)
         let rows = (SnapLayout.all.count + Self.columns - 1) / Self.columns
         for (index, layout) in SnapLayout.all.enumerated() {
             let column = index % Self.columns
             let row = index / Self.columns
             let x = Self.padding + CGFloat(column) * (Self.tileSize.width + Self.gap)
             // Views have a bottom-left origin, so the first row goes at the top.
-            let y = Self.padding + CGFloat(rows - 1 - row) * (Self.tileSize.height + Self.gap)
+            let y = noticeHeight + Self.padding + CGFloat(rows - 1 - row) * (Self.tileSize.height + Self.gap)
             let tile = LayoutTileView(layout: layout) { zone in onPick(layout, zone) }
             tile.frame = NSRect(origin: CGPoint(x: x, y: y), size: Self.tileSize)
             background.addSubview(tile)
+        }
+        if let notice {
+            background.addSubview(notice)
+            NSLayoutConstraint.activate([
+                notice.leadingAnchor.constraint(equalTo: background.leadingAnchor, constant: Self.padding + 2),
+                notice.bottomAnchor.constraint(equalTo: background.bottomAnchor, constant: -Self.padding - 2),
+            ])
         }
         contentView = background
     }
@@ -52,7 +73,7 @@ final class LayoutGridPanel: NSPanel {
 
     /// Shows the grid under the toolbar, kept inside the screen.
     func show(below toolbarFrame: NSRect) {
-        let size = Self.panelSize
+        let size = frame.size
         var origin = CGPoint(x: toolbarFrame.minX, y: toolbarFrame.minY - 6 - size.height)
         let screen = NSScreen.screens.first { $0.frame.intersects(toolbarFrame) } ?? NSScreen.main
         if let visible = screen?.visibleFrame {

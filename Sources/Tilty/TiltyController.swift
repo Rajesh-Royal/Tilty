@@ -203,9 +203,14 @@ final class TiltyController {
         endAssist()
         guard let focused = tracker.focusedWindow() else { return }
 
-        let grid = LayoutGridPanel { [weak self] layout, zone in
-            self?.place(in: layout, zone: zone)
-        }
+        let grid = LayoutGridPanel(
+            showStageManagerNotice: StageManager.isOn,
+            onOpenSettings: { [weak self] in
+                self?.closeLayouts()
+                StageManager.openSettings()
+            },
+            onPick: { [weak self] layout, zone in self?.place(in: layout, zone: zone) }
+        )
         grid.show(below: panel.frame)
         self.grid = grid
         gridTarget = focused

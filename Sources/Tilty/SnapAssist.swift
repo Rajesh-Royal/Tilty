@@ -79,7 +79,7 @@ final class AssistPanel: NSPanel {
 
     static let rowHeight: CGFloat = 48
 
-    init(frame: NSRect, rows: [PickerRow], onChoose: @escaping (Int) -> Void) {
+    init(frame: NSRect, rows: [PickerRow], showStageManagerNotice: Bool = false, onChoose: @escaping (Int) -> Void) {
         super.init(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         configureOverlayPanel(self)
 
@@ -121,11 +121,24 @@ final class AssistPanel: NSPanel {
             view.translatesAutoresizingMaskIntoConstraints = false
             background.addSubview(view)
         }
+        // With Stage Manager on, explain why picked windows hide the others.
+        var listTop = heading.bottomAnchor
+        if showStageManagerNotice {
+            let notice = makeStageManagerNotice(width: max(160, frame.width - 36), textColor: NSColor.white.withAlphaComponent(0.8)) {
+                StageManager.openSettings()
+            }
+            background.addSubview(notice)
+            NSLayoutConstraint.activate([
+                notice.topAnchor.constraint(equalTo: heading.bottomAnchor, constant: 10),
+                notice.leadingAnchor.constraint(equalTo: background.leadingAnchor, constant: 18),
+            ])
+            listTop = notice.bottomAnchor
+        }
         NSLayoutConstraint.activate([
             heading.topAnchor.constraint(equalTo: background.topAnchor, constant: 18),
             heading.leadingAnchor.constraint(equalTo: background.leadingAnchor, constant: 18),
             heading.trailingAnchor.constraint(lessThanOrEqualTo: background.trailingAnchor, constant: -18),
-            scroll.topAnchor.constraint(equalTo: heading.bottomAnchor, constant: 12),
+            scroll.topAnchor.constraint(equalTo: listTop, constant: 12),
             scroll.leadingAnchor.constraint(equalTo: background.leadingAnchor, constant: 12),
             scroll.trailingAnchor.constraint(equalTo: background.trailingAnchor, constant: -12),
             scroll.bottomAnchor.constraint(equalTo: background.bottomAnchor, constant: -12),
@@ -290,7 +303,7 @@ final class SnapAssistSession {
         for index in zones.indices {
             zones[index].panel?.orderOut(nil)
             let frame = zones[index].frame.insetBy(dx: 10, dy: 10)
-            let panel = AssistPanel(frame: frame, rows: rows) { [weak self] row in
+            let panel = AssistPanel(frame: frame, rows: rows, showStageManagerNotice: StageManager.isOn) { [weak self] row in
                 MainActor.assumeIsolated { self?.choose(row: row, zoneIndex: index) }
             }
             panel.orderFrontRegardless()

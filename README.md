@@ -32,6 +32,8 @@ The small chevron at the end of the toolbar opens a grid of layouts with one cli
 
 Each layout is split into zones. Click the zone where the current window should go and it snaps there. Then your other open windows show up in the empty zones. Click one to drop it in, or press Esc or click anywhere else to skip.
 
+If windows disappear when you pick another one, **Stage Manager** is probably on. It shows one app at a time. Tilty warns you when it's on, and you can turn it off in **Control Center** or **System Settings > Desktop & Dock**.
+
 ### Chrome and other Chromium browsers
 
 Chrome puts its tabs right after the traffic lights, so there the toolbar sits at the right end of the tab strip instead. You can change this for any app from the menu bar: **Icons in <App>** then **After the Traffic Lights** or **At the Right End**.

@@ -10,6 +10,7 @@ More layouts, like Windows 11 snap layouts, but one click instead of a hover.
 - **Pick a zone.** Click the part of a layout where the current window should go and it snaps there.
 - **Fill the rest.** After you place a window, your other open windows show up in the empty zones. Click one to drop it in. Press Esc or click anywhere else to skip.
 - **Optional suggestions after Left or Right.** Turn on **Suggest Windows After Left or Right** in the menu bar to get the same window picker for the other side. Off by default, so the quick buttons stay click and done.
+- **Stage Manager warning.** Stage Manager shows one app at a time, so it hides windows you lay out side by side. When it's on, the layout grid, the window picker and the menu bar tell you, with a button to turn it off in Settings.
 
 ### Updating from 0.1.0
 

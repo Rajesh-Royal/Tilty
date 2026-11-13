@@ -62,7 +62,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // --preview-layouts also opens the layout grid and a sample window picker.
         guard CommandLine.arguments.contains("--preview-layouts") else { return }
         panel.setLayoutsOpen(true)
-        let grid = LayoutGridPanel { layout, zone in NSLog("Tilty preview: picked \(layout.id) zone \(zone)") }
+        let notice = CommandLine.arguments.contains("--preview-stage-manager")
+        let grid = LayoutGridPanel(showStageManagerNotice: notice) { layout, zone in NSLog("Tilty preview: picked \(layout.id) zone \(zone)") }
         grid.show(below: panel.frame)
         previewPanels.append(grid)
 
@@ -72,7 +73,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 .filter { $0.activationPolicy == .regular }
                 .prefix(5)
                 .map { PickerRow(icon: $0.icon, title: $0.localizedName ?? "App", subtitle: "Sample window") }
-            let picker = AssistPanel(frame: zone.insetBy(dx: 10, dy: 10), rows: Array(rows)) { NSLog("Tilty preview: chose row \($0)") }
+            let picker = AssistPanel(frame: zone.insetBy(dx: 10, dy: 10), rows: Array(rows), showStageManagerNotice: notice) { NSLog("Tilty preview: chose row \($0)") }
             picker.orderFrontRegardless()
             previewPanels.append(picker)
         }
@@ -147,6 +148,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         pause.isEnabled = trusted
         menu.addItem(pause)
 
+        if trusted, StageManager.isOn {
+            let stage = item("Stage Manager Is On, Turn It Off…", #selector(openStageManagerSettings))
+            stage.image = NSImage(systemSymbolName: "exclamationmark.triangle.fill", accessibilityDescription: nil)
+            stage.toolTip = StageManager.warning
+            menu.addItem(stage)
+        }
+
         let suggest = item("Suggest Windows After Left or Right", #selector(toggleSuggest))
         suggest.state = preferences.suggestAfterHalves ? .on : .off
         suggest.isEnabled = trusted
@@ -202,6 +210,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         preferences.isPaused.toggle()
         controller.refresh()
         updateStatusIcon()
+    }
+
+    @objc private func openStageManagerSettings() {
+        StageManager.openSettings()
     }
 
     @objc private func toggleSuggest() {
