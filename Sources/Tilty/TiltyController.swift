@@ -1,20 +1,19 @@
 import AppKit
 import TiltyCore
 
-/// Keeps the toolbar glued to the active window and runs the window moves.
+/// Keeps a toolbar on each visible window and runs the window moves.
 @MainActor
 final class TiltyController {
 
     let tracker = WindowTracker()
     private let preferences: Preferences
-    private lazy var panel = ToolbarPanel(
-        onAction: { [weak self] action in self?.perform(action) },
-        onLayouts: { [weak self] _ in self?.toggleLayouts() }
-    )
+    private var windowsByKey: [WindowKey: TrackedWindow] = [:]
+    private var panels: [WindowKey: ToolbarPanel] = [:]
 
     // Layout grid from the chevron, and the window picker that follows it.
     private var grid: LayoutGridPanel?
-    private var gridTarget: FocusedWindow?
+    private var gridTarget: TrackedWindow?
+    private var gridPanelKey: WindowKey?
     private var gridMonitor: DismissMonitor?
     private var assist: SnapAssistSession?
 
@@ -22,12 +21,12 @@ final class TiltyController {
     private var pollTimer: Timer?
     private var pacer = PollPacer()
     /// What the last poll saw, to tell a quiet poll from a busy one.
-    private var lastPolled: (key: WindowKey, frame: CGRect)?
+    private var lastPolled: [WindowKey: CGRect] = [:]
+    private var lastFrames: [WindowKey: CGRect] = [:]
+    private var movingWindows = Set<WindowKey>()
     private var settleWork: DispatchWorkItem?
     private var settleDeadline: TimeInterval = 0
     private var refreshQueued = false
-    private var lastWindow: WindowKey?
-    private var lastFrame: CGRect?
     private(set) var isRunning = false
 
     /// Tracking and polling only happen while this is true.
@@ -36,6 +35,7 @@ final class TiltyController {
     private var screensAsleep = false
     private var sessionInactive = false
     private var systemTokens: [NSObjectProtocol] = []
+    private var pointerMonitors: [Any] = []
 
     /// How long a window must hold still before the toolbar comes back after a move.
     private let settleDelay: TimeInterval = 0.15
@@ -83,11 +83,13 @@ final class TiltyController {
 
         if shouldWatch {
             tracker.start()
+            startPointerMonitoring()
             pacer.reset()
-            lastPolled = nil
+            lastPolled = [:]
             schedulePoll()
             refresh()
         } else {
+            stopPointerMonitoring()
             pollTimer?.invalidate()
             pollTimer = nil
             tracker.stop()
@@ -142,53 +144,84 @@ final class TiltyController {
         }
     }
 
-    /// Re-reads the focused window and shows, hides or moves the toolbar.
+    /// Re-reads the relevant window and shows, hides or moves the toolbar.
     func refresh() {
-        apply(isWatching ? tracker.focusedWindow() : nil)
+        apply(isWatching ? tracker.visibleWindows() : [])
     }
 
-    private func apply(_ focused: FocusedWindow?) {
-        guard isWatching, let focused else {
+    private func apply(_ windows: [TrackedWindow]) {
+        guard isWatching else {
             hide()
             return
         }
 
-        // A Tilty move is in flight. Its completion brings the toolbar back.
-        if WindowMover.isSliding {
-            panel.hide()
-            return
-        }
-
-        let key = focused.key
-        let frame = focused.frame
-
-        // The grid belongs to one window. Close it if focus moves or the window moves.
-        if let gridTarget, gridTarget.key != key || !Geometry.approximatelyEqual(gridTarget.frame, frame, tolerance: 0.5) {
+        let currentKeys = Set(windows.map(\.key))
+        if let gridTarget, !currentKeys.contains(gridTarget.key) {
             closeLayouts()
         }
+        for key in Array(panels.keys) where !currentKeys.contains(key) {
+            panels.removeValue(forKey: key)?.close()
+            lastFrames[key] = nil
+            movingWindows.remove(key)
+        }
+        windowsByKey = Dictionary(uniqueKeysWithValues: windows.map { ($0.key, $0) })
 
-        // Same window, new frame: it is being dragged or resized.
-        // Hide while it moves and come back once it settles, instead of lagging behind.
-        if key == lastWindow, let lastFrame, !Geometry.approximatelyEqual(lastFrame, frame, tolerance: 0.5) {
-            self.lastFrame = frame
-            panel.hide()
-            scheduleSettle()
+        if WindowMover.isSliding {
+            panels.values.forEach { $0.hide() }
+            return
+        }
+        guard let primaryHeight = NSScreen.screens.first?.frame.height else {
+            panels.values.forEach { $0.hide() }
             return
         }
 
-        // Waiting for a move to settle.
-        if settleWork != nil, key == lastWindow { return }
+        var foregroundFrames: [CGRect] = []
+        for target in windows {
+            let key = target.key
+            let panel = panel(for: target)
+            let windowFrame = Geometry.flip(target.frame, primaryScreenHeight: primaryHeight)
+            let toolbarFrame = toolbarFrame(for: target)
+            let toolbarIsOccluded = toolbarFrame.map { frame in
+                foregroundFrames.contains { $0.intersects(frame) }
+            } ?? true
 
-        lastWindow = key
-        lastFrame = frame
-        position(for: focused)
+            if let gridTarget, gridTarget.key == key,
+               !Geometry.approximatelyEqual(gridTarget.frame, target.frame, tolerance: 0.5) {
+                closeLayouts()
+            }
+            foregroundFrames.append(windowFrame)
+
+            if let lastFrame = lastFrames[key], !Geometry.approximatelyEqual(lastFrame, target.frame, tolerance: 0.5) {
+                lastFrames[key] = target.frame
+                movingWindows.insert(key)
+                panel.hide()
+                scheduleSettle()
+                continue
+            }
+            if movingWindows.contains(key) { continue }
+
+            lastFrames[key] = target.frame
+            if let toolbarFrame, !toolbarIsOccluded {
+                panel.show(at: toolbarFrame.origin)
+            } else {
+                panel.hide()
+            }
+        }
     }
 
-    private func position(for focused: FocusedWindow) {
-        guard let primaryHeight = NSScreen.screens.first?.frame.height else {
-            panel.hide()
-            return
-        }
+    private func panel(for target: TrackedWindow) -> ToolbarPanel {
+        if let panel = panels[target.key] { return panel }
+        let key = target.key
+        let panel = ToolbarPanel(
+            onAction: { [weak self] action in self?.perform(action, for: key) },
+            onLayouts: { [weak self] _ in self?.toggleLayouts(for: key) }
+        )
+        panels[key] = panel
+        return panel
+    }
+
+    private func toolbarFrame(for focused: TrackedWindow) -> CGRect? {
+        guard let primaryHeight = NSScreen.screens.first?.frame.height else { return nil }
 
         var placement = preferences.placement(forBundleID: focused.app.bundleIdentifier)
         let size = ToolbarPanel.panelSize
@@ -209,12 +242,8 @@ final class TiltyController {
 
         // Skip windows too narrow to hold the toolbar next to the traffic lights.
         let windowCocoa = Geometry.flip(focused.frame, primaryScreenHeight: primaryHeight)
-        guard origin.x + size.width <= windowCocoa.maxX - 8 else {
-            panel.hide()
-            return
-        }
-
-        panel.show(at: origin)
+        guard origin.x + size.width <= windowCocoa.maxX - 8 else { return nil }
+        return CGRect(origin: origin, size: size)
     }
 
     /// Waits until the window has held still for `settleDelay`.
@@ -236,8 +265,7 @@ final class TiltyController {
                     return
                 }
                 self.settleWork = nil
-                // Notifications only pushed the wait back, so the saved frame is stale. Take a fresh one.
-                self.lastFrame = nil
+                self.movingWindows.removeAll()
                 self.refresh()
             }
         }
@@ -249,9 +277,11 @@ final class TiltyController {
         closeLayouts()
         settleWork?.cancel()
         settleWork = nil
-        lastWindow = nil
-        lastFrame = nil
-        panel.hide()
+        movingWindows.removeAll()
+        lastFrames.removeAll()
+        windowsByKey.removeAll()
+        panels.values.forEach { $0.close() }
+        panels.removeAll()
     }
 
     // MARK: - Backup poll
@@ -274,21 +304,52 @@ final class TiltyController {
     private func poll() {
         guard isWatching else { return }
         tracker.ensureAttached()
-        let focused = tracker.focusedWindow()
+        let windows = tracker.visibleWindows()
 
-        let seen = focused.map { (key: $0.key, frame: $0.frame) }
-        let changed = seen?.key != lastPolled?.key || seen?.frame != lastPolled?.frame
+        let seen = Dictionary(uniqueKeysWithValues: windows.map { ($0.key, $0.frame) })
+        let changed = seen != lastPolled
         lastPolled = seen
         pacer.record(changed: changed)
         schedulePoll()
 
-        apply(focused)
+        apply(windows)
+    }
+
+    // MARK: - Window dragging
+
+    private func startPointerMonitoring() {
+        guard pointerMonitors.isEmpty else { return }
+        let dragEvents: NSEvent.EventTypeMask = [.leftMouseDragged, .rightMouseDragged]
+        if let global = NSEvent.addGlobalMonitorForEvents(matching: dragEvents, handler: { [weak self] event in
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { self?.handleDragEvent(event) }
+            }
+        }) {
+            pointerMonitors.append(global)
+        }
+        if let local = NSEvent.addLocalMonitorForEvents(matching: dragEvents, handler: { [weak self] event in
+            self?.handleDragEvent(event)
+            return event
+        }) {
+            pointerMonitors.append(local)
+        }
+    }
+
+    private func stopPointerMonitoring() {
+        pointerMonitors.forEach(NSEvent.removeMonitor)
+        pointerMonitors.removeAll()
+    }
+
+    private func handleDragEvent(_ event: NSEvent) {
+        guard event.type == .leftMouseDragged || event.type == .rightMouseDragged else { return }
+        panels.values.forEach { $0.hide() }
+        scheduleSettle()
     }
 
     // MARK: - Actions
 
-    func perform(_ action: TileAction) {
-        guard let focused = tracker.focusedWindow(),
+    private func perform(_ action: TileAction, for key: WindowKey) {
+        guard let focused = windowsByKey[key],
               let primaryHeight = NSScreen.screens.first?.frame.height else { return }
 
         let screens = NSScreen.screens
@@ -296,7 +357,6 @@ final class TiltyController {
         guard let index = Geometry.bestScreenIndex(for: current, screens: screens.map(\.frame)) else { return }
 
         let target = Geometry.targetFrame(for: action, in: screens[index].visibleFrame)
-        let key = focused.key
         let frame = history.resolve(key: key, action: action, current: current, target: target)
 
         // Optional: after Left or Right, offer windows for the other side.
@@ -309,7 +369,7 @@ final class TiltyController {
         }
 
         let window = focused.window
-        beginMove()
+        beginMove(for: key)
         WindowMover.move(
             cocoaFrame: frame,
             to: window,
@@ -325,7 +385,7 @@ final class TiltyController {
                     if let actual = window.frame, let height = NSScreen.screens.first?.frame.height {
                         self.history.recordApplied(key: key, frame: Geometry.flip(actual, primaryScreenHeight: height))
                     }
-                    self.finishMove()
+                    self.finishMove(for: key)
                     if !zoneFrames.isEmpty {
                         self.startAssist(zoneFrames: zoneFrames, excluding: [key])
                     }
@@ -335,29 +395,32 @@ final class TiltyController {
     }
 
     /// Hides the toolbar while Tilty moves a window.
-    private func beginMove() {
-        settleWork?.cancel()
-        settleWork = nil
-        panel.hide()
+    private func beginMove(for key: WindowKey) {
+        movingWindows.insert(key)
+        panels[key]?.hide()
     }
 
     /// Brings the toolbar back at the window's new frame, without waiting for another settle.
-    private func finishMove() {
-        settleWork?.cancel()
-        settleWork = nil
-        lastFrame = nil
+    private func finishMove(for key: WindowKey? = nil) {
+        if let key {
+            movingWindows.remove(key)
+            lastFrames[key] = nil
+        } else {
+            movingWindows.removeAll()
+            lastFrames.removeAll()
+        }
         refresh()
     }
 
     // MARK: - Layout grid
 
-    private func toggleLayouts() {
+    private func toggleLayouts(for key: WindowKey) {
         if grid != nil {
             closeLayouts()
             return
         }
         endAssist()
-        guard let focused = tracker.focusedWindow() else { return }
+        guard let focused = windowsByKey[key], let panel = panels[key] else { return }
 
         let grid = LayoutGridPanel(
             showStageManagerNotice: StageManager.isOn,
@@ -370,6 +433,7 @@ final class TiltyController {
         grid.show(below: panel.frame)
         self.grid = grid
         gridTarget = focused
+        gridPanelKey = key
         panel.setLayoutsOpen(true)
         gridMonitor = DismissMonitor { [weak self] in
             MainActor.assumeIsolated { self?.closeLayouts() }
@@ -383,12 +447,13 @@ final class TiltyController {
         grid?.orderOut(nil)
         grid = nil
         gridTarget = nil
-        panel.setLayoutsOpen(false)
+        if let gridPanelKey { panels[gridPanelKey]?.setLayoutsOpen(false) }
+        gridPanelKey = nil
     }
 
     /// Puts the window into the picked zone, then offers windows for the other zones.
     private func place(in layout: SnapLayout, zone index: Int) {
-        guard let target = gridTarget ?? tracker.focusedWindow(),
+        guard let target = gridTarget,
               let primaryHeight = NSScreen.screens.first?.frame.height else { return }
         // Close first so the hide-while-moving logic does not fight an open grid.
         closeLayouts()
@@ -401,7 +466,7 @@ final class TiltyController {
         let frame = Geometry.frame(forZone: layout.zones[index], in: visible)
         let rest = layout.remainingZones(after: index).map { Geometry.frame(forZone: $0, in: visible) }
         let placed = target.key
-        beginMove()
+        beginMove(for: placed)
         WindowMover.move(
             cocoaFrame: frame,
             to: target.window,
@@ -412,7 +477,7 @@ final class TiltyController {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
                 MainActor.assumeIsolated {
                     guard let self else { return }
-                    self.finishMove()
+                    self.finishMove(for: placed)
                     if !rest.isEmpty {
                         self.startAssist(zoneFrames: rest, excluding: [placed])
                     }

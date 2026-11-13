@@ -18,12 +18,12 @@ Tilty is a personal tool built for exactly that.
 
 ## What it does
 
-- Shows a small toolbar right after the traffic lights of the active window.
+- Shows a small toolbar right after the traffic lights on each visible window, including inactive windows.
 - **Fill** makes the window as big as the screen without going full screen. The menu bar and Dock stay visible.
 - **Left Half** and **Right Half** snap the window to that side of the screen.
 - Click the same button again to put the window back where it was.
 - Windows slide smoothly into place. Apps that can't redraw fast enough, like some heavy browsers and editors, snap straight there instead of stuttering.
-- The toolbar follows you as you switch apps and windows. It hides while you drag a window and comes back when you let go.
+- The toolbar stays with each visible window as you switch apps and windows. Use controls on an inactive window without activating it. It hides while you drag a window and comes back when you let go.
 - It stays out of the way for full screen windows, dialogs, sheets and minimized windows.
 - Works with multiple displays. The window stays on the screen it's already on.
 

@@ -1,9 +1,10 @@
 import AppKit
 import ApplicationServices
 import os
+import TiltyCore
 
-/// The focused window of the frontmost app, ready for Tilty to act on.
-struct FocusedWindow {
+/// A regular window Tilty can position.
+struct TrackedWindow {
     let app: NSRunningApplication
     let appElement: AXUIElement
     let window: AXUIElement
@@ -23,10 +24,15 @@ enum TrackerEvent {
     case other
 }
 
-/// Follows the frontmost app and its focused window, and calls `onChange`
-/// whenever something that affects the toolbar might have changed.
+/// Tracks the frontmost app and discovers standard windows visible on the current Space.
 @MainActor
 final class WindowTracker {
+
+    private struct AccessibilityWindow {
+        let element: AXUIElement
+        let frame: CGRect
+        let zoomButton: CGRect?
+    }
 
     var onChange: ((TrackerEvent) -> Void)?
 
@@ -116,7 +122,7 @@ final class WindowTracker {
 
     /// Reads the focused window fresh from the app.
     /// Returns nil when there is nothing Tilty should decorate.
-    func focusedWindow() -> FocusedWindow? {
+    func focusedWindow() -> TrackedWindow? {
         guard let app = currentApp, let appElement, !app.isHidden else { return nil }
 
         guard let window = appElement.element(kAXFocusedWindowAttribute)
@@ -141,10 +147,87 @@ final class WindowTracker {
         }
 
         let zoomButton = window.element(kAXZoomButtonAttribute)?.frame
-        return FocusedWindow(app: app, appElement: appElement, window: window, frame: frame, zoomButton: zoomButton)
+        return TrackedWindow(app: app, appElement: appElement, window: window, frame: frame, zoomButton: zoomButton)
+    }
+
+    /// Returns standard windows visible on the current Space, ordered front to back.
+    func visibleWindows() -> [TrackedWindow] {
+        // Some apps report geometry changes only on the focused window itself.
+        _ = focusedWindow()
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
+        guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else { return [] }
+        var appCache: [pid_t: (NSRunningApplication, AXUIElement, [AccessibilityWindow])] = [:]
+        var skippedApps = Set<pid_t>()
+        var seen = Set<WindowKey>()
+        var result: [TrackedWindow] = []
+        for info in windows {
+            guard let pid = info[kCGWindowOwnerPID as String] as? pid_t, pid != ownPID,
+                  (info[kCGWindowLayer as String] as? Int) == 0,
+                  let boundsDict = info[kCGWindowBounds as String] as? NSDictionary,
+                  let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else { continue }
+            guard !skippedApps.contains(pid) else { continue }
+
+            let appData: (NSRunningApplication, AXUIElement, [AccessibilityWindow])
+            if let cached = appCache[pid] {
+                appData = cached
+            } else {
+                guard let app = NSRunningApplication(processIdentifier: pid),
+                      app.activationPolicy == .regular,
+                      !app.isHidden else {
+                    skippedApps.insert(pid)
+                    continue
+                }
+                let appElement = AXUIElementCreateApplication(pid)
+                AXUIElementSetMessagingTimeout(appElement, 0.1)
+                guard let appWindows = appElement.copyValue(kAXWindowsAttribute) as? [AXUIElement] else {
+                    skippedApps.insert(pid)
+                    continue
+                }
+                let accessibleWindows = appWindows.compactMap { window -> AccessibilityWindow? in
+                    guard window.string(kAXRoleAttribute) == kAXWindowRole,
+                          window.string(kAXSubroleAttribute) == kAXStandardWindowSubrole,
+                          window.bool(kAXMinimizedAttribute) != true,
+                          window.bool(AXName.fullScreen) != true,
+                          let frame = window.frame,
+                          frame.width >= 160, frame.height >= 60 else { return nil }
+                    return AccessibilityWindow(element: window, frame: frame, zoomButton: window.element(kAXZoomButtonAttribute)?.frame)
+                }
+                appData = (app, appElement, accessibleWindows)
+                appCache[pid] = appData
+            }
+
+            guard let target = trackedWindow(in: appData.2, app: appData.0, appElement: appData.1, bounds: bounds),
+                  seen.insert(target.key).inserted else { continue }
+            result.append(target)
+        }
+        return result
     }
 
     // MARK: - Attaching
+
+    private func trackedWindow(
+        in windows: [AccessibilityWindow],
+        app: NSRunningApplication,
+        appElement: AXUIElement,
+        bounds: CGRect
+    ) -> TrackedWindow? {
+        let candidates = windows.compactMap { window -> (AccessibilityWindow, CGFloat)? in
+            let overlap = window.frame.intersection(bounds)
+            guard !overlap.isNull else { return nil }
+            let area = min(window.frame.width * window.frame.height, bounds.width * bounds.height)
+            guard area > 0 else { return nil }
+            return (window, overlap.width * overlap.height / area)
+        }
+        guard let candidate = candidates.max(by: { $0.1 < $1.1 }), candidate.1 >= 0.6 else { return nil }
+        return TrackedWindow(
+            app: app,
+            appElement: appElement,
+            window: candidate.0.element,
+            frame: candidate.0.frame,
+            zoomButton: candidate.0.zoomButton
+        )
+    }
 
     private func attach(to app: NSRunningApplication?) {
         // Same app, already observed. Adding notifications is a round trip each, so keep what works.
