@@ -2,6 +2,10 @@
 
 Tilty puts three big buttons in the title bar of whatever window you're using: **Fill**, **Left Half** and **Right Half**. One click and the window moves. No hovering, no waiting, no menus.
 
+<p align="center">
+  <img src="docs/demo.svg" alt="Tilty demo: one click on Fill, Left Half and Right Half, then click again to restore" width="720">
+</p>
+
 ## Why I built this
 
 If I had a keyboard and a mouse, I would not have built this.
@@ -79,6 +83,8 @@ Layout:
 - `Sources/TiltyCore` holds the pure logic. It covers coordinate flipping, tile frames, screen choice, toolbar placement and the restore memory. It has no AppKit or Accessibility code, so it's easy to test.
 - `Sources/Tilty` is the app. It has the menu bar item, the floating toolbar panel, window tracking through `AXObserver` and the window mover.
 - `Tests/TiltyCoreTests` has tests for the core.
+
+To change the README animation, edit `scripts/make-demo-svg.py` and run `python3 scripts/make-demo-svg.py`. It writes `docs/demo.svg`.
 
 `Tilty --preview` (run the binary inside the app) draws the toolbar on the frontmost window without needing Accessibility access. It's handy for checking the look.
 

@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>Tilty demo: one click Fill, Left half, Right half, and click again to restore</title>
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b8def"/>
+      <stop offset="0.55" stop-color="#7b6fd6"/>
+      <stop offset="1" stop-color="#e58a9a"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <!-- Desktop -->
+  <rect width="800" height="500" fill="url(#wall)"/>
+  <path d="M0 380 C 160 330, 300 400, 460 350 S 720 320, 800 360 L 800 500 L 0 500 Z" fill="#ffffff" fill-opacity="0.10"/>
+  <path d="M0 420 C 200 390, 360 450, 560 410 S 760 400, 800 420 L 800 500 L 0 500 Z" fill="#ffffff" fill-opacity="0.10"/>
+
+  <!-- Menu bar -->
+  <rect width="800" height="24" fill="#ffffff" fill-opacity="0.55"/>
+  <circle cx="18" cy="12" r="5" fill="#1c1c1e" fill-opacity="0.75"/>
+  <rect x="34" y="8" width="38" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.55"/>
+  <rect x="82" y="8" width="26" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
+  <rect x="116" y="8" width="26" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
+  <rect x="150" y="8" width="30" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
+  <rect x="700" y="8" width="84" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
+
+  <!-- Background window -->
+  <g transform="translate(470 64)" opacity="0.85" filter="url(#shadow)">
+    <rect width="270" height="190" rx="10" fill="#f6f6f8"/>
+    <rect width="270" height="28" rx="10" fill="#e4e4e8"/>
+    <rect y="18" width="270" height="10" fill="#e4e4e8"/>
+    <circle cx="17" cy="14" r="6" fill="#c7c7cc"/>
+    <circle cx="37" cy="14" r="6" fill="#c7c7cc"/>
+    <circle cx="57" cy="14" r="6" fill="#c7c7cc"/>
+  </g>
+
+  <!-- Dock -->
+  <rect x="266" y="446" width="268" height="42" rx="12" fill="#ffffff" fill-opacity="0.35" stroke="#ffffff" stroke-opacity="0.4"/>
+  <rect x="278" y="453" width="28" height="28" rx="7" fill="#5ac8fa"/><rect x="314" y="453" width="28" height="28" rx="7" fill="#34c759"/><rect x="350" y="453" width="28" height="28" rx="7" fill="#ff9f0a"/><rect x="386" y="453" width="28" height="28" rx="7" fill="#ff375f"/><rect x="422" y="453" width="28" height="28" rx="7" fill="#bf5af2"/><rect x="458" y="453" width="28" height="28" rx="7" fill="#64d2ff"/><rect x="494" y="453" width="28" height="28" rx="7" fill="#8e8e93"/>
+
+  <!-- Active window with the Tilty toolbar -->
+  <g filter="url(#shadow)">
+    <animateTransform attributeName="transform" type="translate" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.12;0.15;0.31;0.34;0.47;0.5;0.67;0.7;1" values="170 92;170 92;0 24;0 24;0 24;0 24;400 24;400 24;170 92;170 92" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/>
+    
+    <clipPath id="winclip">
+      <rect width="400" height="270" rx="10">
+        <animate attributeName="width" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.12;0.15;0.31;0.34;0.47;0.5;0.67;0.7;1" values="400;400;800;800;400;400;400;400;400;400" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1" />
+        <animate attributeName="height" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.12;0.15;0.31;0.34;0.47;0.5;0.67;0.7;1" values="270;270;416;416;416;416;416;416;270;270" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1" />
+      </rect>
+    </clipPath>
+    <g clip-path="url(#winclip)">
+      <rect width="800" height="500" fill="#ffffff"/>
+      <rect width="800" height="30" fill="#ececee"/>
+      <rect y="30" width="800" height="0.8" fill="#d1d1d6"/>
+      <rect y="30.8" width="120" height="500" fill="#f4f4f6"/>
+      <rect x="18" y="52" width="70" height="8" rx="4" fill="#d9d9de"/>
+      <rect x="18" y="72" width="54" height="8" rx="4" fill="#d9d9de"/>
+      <rect x="18" y="92" width="64" height="8" rx="4" fill="#d9d9de"/>
+      <rect x="142" y="54" width="180" height="10" rx="5" fill="#e3e3e8"/>
+      <rect x="142" y="78" width="240" height="8" rx="4" fill="#ececf0"/>
+      <rect x="142" y="96" width="210" height="8" rx="4" fill="#ececf0"/>
+      <rect x="142" y="114" width="226" height="8" rx="4" fill="#ececf0"/>
+      <circle cx="17" cy="15" r="6" fill="#ff5f57"/>
+      <circle cx="37" cy="15" r="6" fill="#febc2e"/>
+      <circle cx="57" cy="15" r="6" fill="#28c840"/>
+    </g>
+    <rect width="400" height="270" rx="10" fill="none" stroke="#000" stroke-opacity="0.18" stroke-width="0.8">
+      <animate attributeName="width" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.12;0.15;0.31;0.34;0.47;0.5;0.67;0.7;1" values="400;400;800;800;400;400;400;400;400;400" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1" />
+      <animate attributeName="height" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.12;0.15;0.31;0.34;0.47;0.5;0.67;0.7;1" values="270;270;416;416;416;416;416;416;270;270" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1" />
+    </rect>
+    <g id="toolbar" transform="translate(68 4)">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.12;0.13;0.17;0.18;0.31;0.31;0.35;0.36;0.47;0.48;0.52;0.53;0.67;0.68;0.72;0.73;1" values="1;1;0;0;1;1;0;0;1;1;0;0;1;1;0;0;1;1" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1" />
+    <rect width="92" height="24" rx="7" fill="#ffffff" fill-opacity="0.9" stroke="#000" stroke-opacity="0.12" stroke-width="0.6"/>
+    <rect x="2" y="2" width="28" height="20" rx="5" fill="#000" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.1;0.1;0.11;0.12;0.12;0.13;1" values="0;0;0.14;0.14;0.32;0.32;0;0" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1" /></rect>
+    <rect x="9.5" y="7" width="13" height="10" rx="2.2" fill="none" stroke="#3a3a3c" stroke-width="1.2"/><rect x="11.5" y="9" width="9" height="6" rx="1" fill="#3a3a3c"/>
+    <rect x="32" y="2" width="28" height="20" rx="5" fill="#000" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.28;0.28;0.3;0.3;0.31;0.31;1" values="0;0;0.14;0.14;0.32;0.32;0;0" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1" /></rect>
+    <rect x="39.5" y="7" width="13" height="10" rx="2.2" fill="none" stroke="#3a3a3c" stroke-width="1.2"/><rect x="41.5" y="9" width="4.5" height="6" rx="1" fill="#3a3a3c"/>
+    <rect x="62" y="2" width="28" height="20" rx="5" fill="#000" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.45;0.45;0.47;0.47;0.47;0.48;0.65;0.65;0.67;0.67;0.67;0.68;1" values="0;0;0.14;0.14;0.32;0.32;0;0;0.14;0.14;0.32;0.32;0;0" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1" /></rect>
+    <rect x="69.5" y="7" width="13" height="10" rx="2.2" fill="none" stroke="#3a3a3c" stroke-width="1.2"/><rect x="76" y="9" width="4.5" height="6" rx="1" fill="#3a3a3c"/>
+    </g>
+  </g>
+  
+  <g opacity="0">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.12;0.13;0.23;0.25;1" values="0;0;1;1;0;0"/>
+    <rect x="366.6" y="384" width="66.8" height="34" rx="17" fill="#1c1c1e" fill-opacity="0.82"/>
+    <text x="400.0" y="406" text-anchor="middle" font-size="15" font-weight="600" fill="#fff">Fill</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.3;0.32;0.42;0.43;1" values="0;0;1;1;0;0"/>
+    <rect x="343.6" y="384" width="112.8" height="34" rx="17" fill="#1c1c1e" fill-opacity="0.82"/>
+    <text x="400.0" y="406" text-anchor="middle" font-size="15" font-weight="600" fill="#fff">Left half</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.47;0.48;0.58;0.6;1" values="0;0;1;1;0;0"/>
+    <rect x="339" y="384" width="122" height="34" rx="17" fill="#1c1c1e" fill-opacity="0.82"/>
+    <text x="400.0" y="406" text-anchor="middle" font-size="15" font-weight="600" fill="#fff">Right half</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.67;0.68;0.78;0.8;1" values="0;0;1;1;0;0"/>
+    <rect x="283.8" y="384" width="232.4" height="34" rx="17" fill="#1c1c1e" fill-opacity="0.82"/>
+    <text x="400.0" y="406" text-anchor="middle" font-size="15" font-weight="600" fill="#fff">Click again to restore</text>
+  </g>
+  
+  <circle cx="254" cy="108" r="0" fill="none" stroke="#0a84ff" stroke-width="2" opacity="0">
+    <animate attributeName="r" dur="12s" repeatCount="indefinite" keyTimes="0;0.12;0.12;0.15;1" values="0;0;4;18;18"/>
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.12;0.12;0.15;1" values="0;0;0.9;0;0"/>
+  </circle>
+  <circle cx="114" cy="40" r="0" fill="none" stroke="#0a84ff" stroke-width="2" opacity="0">
+    <animate attributeName="r" dur="12s" repeatCount="indefinite" keyTimes="0;0.3;0.3;0.34;1" values="0;0;4;18;18"/>
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.3;0.3;0.34;1" values="0;0;0.9;0;0"/>
+  </circle>
+  <circle cx="144" cy="40" r="0" fill="none" stroke="#0a84ff" stroke-width="2" opacity="0">
+    <animate attributeName="r" dur="12s" repeatCount="indefinite" keyTimes="0;0.47;0.47;0.5;1" values="0;0;4;18;18"/>
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.47;0.47;0.5;1" values="0;0;0.9;0;0"/>
+  </circle>
+  <circle cx="544" cy="40" r="0" fill="none" stroke="#0a84ff" stroke-width="2" opacity="0">
+    <animate attributeName="r" dur="12s" repeatCount="indefinite" keyTimes="0;0.67;0.67;0.7;1" values="0;0;4;18;18"/>
+    <animate attributeName="opacity" dur="12s" repeatCount="indefinite" keyTimes="0;0.67;0.67;0.7;1" values="0;0;0.9;0;0"/>
+  </circle>
+
+  <!-- Cursor -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" dur="12s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.02;0.1;0.2;0.28;0.37;0.45;0.57;0.65;0.8;0.9;1" values="640 400;640 400;254 108;254 108;114 40;114 40;144 40;144 40;544 40;544 40;640 400;640 400" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/>
+    <path d="M0 0 L0 17 L4.6 13 L7.6 20.2 L10.4 19 L7.4 12 L13 12 Z" fill="#111" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>
+  </g>
+</svg>
