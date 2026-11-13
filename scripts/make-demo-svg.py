@@ -242,7 +242,20 @@ def build():
   <rect x="82" y="8" width="26" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
   <rect x="116" y="8" width="26" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
   <rect x="150" y="8" width="30" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
-  <rect x="700" y="8" width="84" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
+  <!-- Menu bar extras, with the Tilty icon (rectangle.split.2x1) first -->
+  <g fill="none" stroke="#1c1c1e" stroke-opacity="0.85" stroke-width="1.4">
+    <rect x="626.7" y="6.7" width="17" height="11" rx="2.5"/>
+    <line x1="635.2" y1="7" x2="635.2" y2="17.4"/>
+  </g>
+  <g fill="#1c1c1e" fill-opacity="0.75">
+    <path d="M661 15.5 a1.6 1.6 0 1 0 0.01 0 Z"/>
+    <path d="M655.5 12.6 a8 8 0 0 1 11 0 l-1.4 1.4 a6 6 0 0 0 -8.2 0 Z"/>
+    <path d="M652.7 9.8 a12 12 0 0 1 16.6 0 l-1.4 1.4 a10 10 0 0 0 -13.8 0 Z"/>
+  </g>
+  <rect x="680.5" y="7.5" width="20" height="9" rx="2.5" fill="none" stroke="#1c1c1e" stroke-opacity="0.6"/>
+  <rect x="682.5" y="9.5" width="13" height="5" rx="1.2" fill="#1c1c1e" fill-opacity="0.75"/>
+  <rect x="701.5" y="10.5" width="1.6" height="3" rx="0.8" fill="#1c1c1e" fill-opacity="0.6"/>
+  <text x="784" y="16.5" text-anchor="end" font-size="12" font-weight="500" fill="#1c1c1e" fill-opacity="0.85">Fri 11:46</text>
 
   <!-- Background window -->
   <g transform="translate(470 64)" opacity="0.85" filter="url(#shadow)">
