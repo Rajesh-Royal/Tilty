@@ -2,23 +2,35 @@
 # Builds Tilty.app into ./build.
 #
 # Usage:
-#   scripts/build-app.sh            build a release app
-#   scripts/build-app.sh --install  also copy it to /Applications and open it
+#   scripts/build-app.sh               build for this Mac (arm64)
+#   scripts/build-app.sh --universal   build for Apple Silicon and Intel
+#   scripts/build-app.sh --install     also copy it to /Applications and open it
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 BUNDLE_ID="app.tilty.Tilty"
 APP="build/Tilty.app"
-VERSION="0.1.0"
+VERSION="$(tr -d '[:space:]' < VERSION)"
+BUILD_NUMBER="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
+
+INSTALL=0
+ARCHS=(--arch arm64)
+for arg in "$@"; do
+  case "$arg" in
+    --install) INSTALL=1 ;;
+    --universal) ARCHS=(--arch arm64 --arch x86_64) ;;
+    *) echo "Unknown option: $arg" >&2; exit 1 ;;
+  esac
+done
 
 # Prefer full Xcode when Command Line Tools is the active developer directory.
 if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app ]]; then
   export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 fi
 
-swift build -c release --arch arm64
-BIN="$(swift build -c release --arch arm64 --show-bin-path)/Tilty"
+swift build -c release "${ARCHS[@]}"
+BIN="$(swift build -c release "${ARCHS[@]}" --show-bin-path)/Tilty"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
@@ -38,7 +50,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key><string>Tilty</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>${VERSION}</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleVersion</key><string>${BUILD_NUMBER}</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
@@ -51,9 +63,9 @@ PLIST
 codesign --force --sign - --identifier "$BUNDLE_ID" "$APP"
 codesign --verify "$APP"
 
-echo "Built $APP"
+echo "Built $APP ($VERSION, build $BUILD_NUMBER)"
 
-if [[ "${1:-}" == "--install" ]]; then
+if [[ "$INSTALL" == 1 ]]; then
   pkill -x Tilty 2>/dev/null || true
   rm -rf /Applications/Tilty.app
   cp -R "$APP" /Applications/Tilty.app
