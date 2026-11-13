@@ -22,6 +22,7 @@ Tilty is a personal tool built for exactly that.
 - **Fill** makes the window as big as the screen without going full screen. The menu bar and Dock stay visible.
 - **Left Half** and **Right Half** snap the window to that side of the screen.
 - Click the same button again to put the window back where it was.
+- Windows slide smoothly into place. Apps that can't redraw fast enough, like some heavy browsers and editors, snap straight there instead of stuttering.
 - The toolbar follows you as you switch apps and windows. It hides while you drag a window and comes back when you let go.
 - It stays out of the way for full screen windows, dialogs, sheets and minimized windows.
 - Works with multiple displays. The window stays on the screen it's already on.
@@ -44,8 +45,11 @@ The Tilty icon in the menu bar has:
 
 - **Pause Tilty** to hide the toolbar for a while.
 - **Suggest Windows After Left or Right** to also show the window picker for the other side after a quick Left or Right click. Off by default.
+- **Animate Window Moves** to slide windows into place. On by default. Turn it off if you'd rather they snap. Tilty also snaps when **Reduce Motion** is on in macOS.
 - **Icons in <App>** to pick where the toolbar sits for the current app.
 - **Launch at Login**.
+- **About Tilty** with the version and links to the website and this repo.
+- **Check for Updates** to open the latest release.
 - **Quit Tilty**.
 
 If the icon shows a warning triangle, Tilty is still waiting for Accessibility access.

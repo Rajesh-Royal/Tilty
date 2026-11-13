@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+### What's new
+
+- **Smooth window moves.** Fill, Left, Right, the layout grid and the window picker now slide the window into place instead of jumping. Apps that can't redraw fast enough snap straight there, so a move never stutters.
+- **Animate Window Moves** switch in the menu bar. On by default. Turn it off if you'd rather windows snap. Tilty also snaps when **Reduce Motion** is on in macOS.
+
+### Updating
+
+Quit Tilty, replace it in Applications with the new one and open it. If the buttons don't show up, open **System Settings > Privacy & Security > Accessibility**, remove Tilty with the **minus** button, then open Tilty again and allow it.
+
 ## 0.2.1
 
 ### What's new
