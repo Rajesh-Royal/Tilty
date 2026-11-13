@@ -97,7 +97,7 @@ Layout:
 - `Sources/Tilty` is the app. It has the menu bar item, the floating toolbar panel, window tracking through `AXObserver` and the window mover.
 - `Tests/TiltyCoreTests` has tests for the core.
 
-To change the README animation, edit `scripts/make-demo-svg.py` and run `python3 scripts/make-demo-svg.py`. It writes `docs/demo.svg`.
+To change the README animation, edit `scripts/make-demo-svg.py` and run `python3 scripts/make-demo-svg.py`. It writes `docs/demo.svg`. Then run `node scripts/make-demo-anim.mjs` to refresh `docs/demo.webp` and `docs/demo.gif` from it.
 
 `Tilty --preview` (run the binary inside the app) draws the toolbar on the frontmost window without needing Accessibility access. It's handy for checking the look.
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Renders docs/demo.svg frame by frame in headless Chrome and encodes docs/demo.webp,
-// an animated, looping WebP of the same demo.
+// Renders docs/demo.svg frame by frame in headless Chrome and encodes two looping animations:
+//   docs/demo.webp  1200x750, lossless
+//   docs/demo.gif   900x563, for places that don't show WebP
 //
-// Needs Google Chrome, Node 22+ and img2webp (brew install webp).
-// Run: node scripts/make-demo-webp.mjs
+// Needs Google Chrome, Node 22+, img2webp (brew install webp) and ffmpeg.
+// Run: node scripts/make-demo-anim.mjs
 
 import { spawn, execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
@@ -14,6 +15,8 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const svg = join(root, "docs/demo.svg");
 const out = join(root, "docs/demo.webp");
+const gif = join(root, "docs/demo.gif");
+const GIF_WIDTH = 900;
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PORT = 9333;
@@ -79,6 +82,14 @@ try {
   args.push("-o", out);
   execFileSync("img2webp", args, { stdio: "inherit" });
   console.log(`Wrote ${out} (${frames} frames at ${FPS} fps)`);
+
+  // GIF: one shared 256 color palette, light ordered dithering for the wallpaper gradient.
+  execFileSync("ffmpeg", [
+    "-v", "error", "-y", "-framerate", String(FPS), "-i", join(work, "f%04d.png"),
+    "-vf", `scale=${GIF_WIDTH}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=256:stats_mode=full[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`,
+    "-loop", "0", gif,
+  ], { stdio: "inherit" });
+  console.log(`Wrote ${gif}`);
 } finally {
   chrome.kill();
   await sleep(300);
