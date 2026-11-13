@@ -79,7 +79,8 @@
       margin: 0 0 1.4rem;
       max-width: 13ch;
     }
-    .hero p { font-size: clamp(1.15rem, 1.9vw, 1.35rem); color: var(--muted); max-width: var(--measure); margin: 0 0 2rem; }
+    .hero > p { font-size: clamp(1.15rem, 1.9vw, 1.35rem); color: var(--muted); max-width: var(--measure); margin: 0 0 2rem; }
+    .hero > p.version { font-size: 1rem; margin: 1rem 0 0; }
     .cta {
       display: inline-flex; align-items: center; gap: 0.6rem;
       background: var(--ink); color: var(--paper);
@@ -89,6 +90,11 @@
     }
     .cta:hover { text-decoration: none; background: var(--violet); color: #fff; }
     .cta svg { width: 20px; height: 20px; }
+
+    .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; }
+    .secondary { font-weight: 600; padding: 0.6rem 0.25rem; }
+    .version { margin: 1rem 0 0; font-size: 1rem; color: var(--muted); }
+    .needs code { font: 400 .9em "JetBrains Mono", ui-monospace, monospace; background: var(--paper-2); padding: .15em .4em; border-radius: 6px; }
 
     /* Live demo */
     .demo { margin-top: clamp(2.5rem, 5vw, 4rem); }
@@ -304,10 +310,14 @@
     <section class="wrap hero">
       <h1>Big buttons for tiling windows.</h1>
       <p>Tilty puts Fill, Left half and Right half in the title bar of the window you're using. One click with the trackpad and it's done. No hovering over the green button, no waiting, no shortcuts to remember.</p>
-      <a class="cta" href="https://github.com/Rajesh-Royal/Tilty">
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        Get Tilty on GitHub
-      </a>
+      <div class="cta-row">
+        <a class="cta" href="https://github.com/Rajesh-Royal/Tilty/releases/latest/download/Tilty.dmg">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10"/><path d="M5.5 8.5 10 13l4.5-4.5"/><path d="M3.5 16.5h13"/></svg>
+          Download for Mac
+        </a>
+        <a class="secondary" href="https://github.com/Rajesh-Royal/Tilty">View on GitHub</a>
+      </div>
+      <p class="version"><span id="version">Version 0.1.0</span>. Free. macOS 13 or later, Apple Silicon and Intel.</p>
 
       <div class="demo">
         <div class="desktop" aria-label="Interactive preview of Tilty on a Mac desktop" role="group">
@@ -424,27 +434,24 @@
       <ol class="steps">
         <li>
           <div>
-            <h3>Build and install</h3>
-            <p>Clone the repo and run the build script. It copies Tilty to your Applications folder and opens it.</p>
-            <pre><code>git clone https://github.com/Rajesh-Royal/Tilty.git
-cd Tilty
-scripts/build-app.sh --install</code></pre>
+            <h3>Download and drag</h3>
+            <p><a href="https://github.com/Rajesh-Royal/Tilty/releases/latest/download/Tilty.dmg">Download Tilty.dmg</a>, open it and drag Tilty into your Applications folder.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Open it the first time</h3>
+            <p>Tilty isn't from the App Store, so macOS asks you to confirm once. Open Tilty and click Done on the warning. Then go to System Settings, Privacy &amp; Security, scroll down and click Open Anyway next to Tilty.</p>
           </div>
         </li>
         <li>
           <div>
             <h3>Allow Accessibility access</h3>
-            <p>macOS asks once. Click Open System Settings, then turn on Tilty in Privacy &amp; Security, Accessibility. Tilty needs this to move other apps' windows.</p>
-          </div>
-        </li>
-        <li>
-          <div>
-            <h3>Click into any window</h3>
-            <p>The buttons show up right after the traffic lights. Tilty lives in the menu bar, where you can pause it or quit.</p>
+            <p>Tilty asks for this so it can move other apps' windows. Click Open System Settings and turn on Tilty. Now click into any window and the buttons are right there, next to the traffic lights.</p>
           </div>
         </li>
       </ol>
-      <p class="needs">Needs macOS 13 or later and Xcode.</p>
+      <p class="needs">See what's new in each version in the <a href="https://github.com/Rajesh-Royal/Tilty/releases">release notes</a>. Prefer to build it yourself? Clone the repo and run <code>scripts/build-app.sh --install</code>.</p>
     </section>
   </main>
 
@@ -523,6 +530,16 @@ scripts/build-app.sh --install</code></pre>
         });
       });
     })();
+
+    // Show the latest released version next to the download button.
+    fetch('https://api.github.com/repos/Rajesh-Royal/Tilty/releases/latest')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (release) {
+        if (release && release.tag_name) {
+          document.getElementById('version').textContent = 'Version ' + release.tag_name.replace(/^v/, '');
+        }
+      })
+      .catch(function () {});
   </script>
 </body>
 </html>

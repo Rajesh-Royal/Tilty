@@ -43,31 +43,44 @@ If the icon shows a warning triangle, Tilty is still waiting for Accessibility a
 
 ## Install
 
-Requires macOS 13 or later and Xcode (or the Swift toolchain).
+**[Download Tilty.dmg](https://github.com/Rajesh-Royal/Tilty/releases/latest/download/Tilty.dmg)** (macOS 13 or later, Apple Silicon and Intel)
+
+1. Open the DMG and drag **Tilty** into **Applications**.
+2. Open Tilty. macOS says it can't verify the app, because Tilty isn't from the App Store. Click **Done**.
+3. Open **System Settings > Privacy & Security**, scroll down and click **Open Anyway** next to Tilty.
+4. When Tilty asks for Accessibility access, click **Open System Settings** and turn on **Tilty**.
+
+That's it. Click into any window and the buttons are next to the traffic lights. If they don't show up after a few seconds, quit Tilty from the menu bar and open it again.
+
+What changed in each version is in the [release notes](https://github.com/Rajesh-Royal/Tilty/releases) and in [CHANGELOG.md](CHANGELOG.md).
+
+### Updating
+
+Quit Tilty, replace it in Applications with the new version and open it. Each version counts as a new app to macOS, so if the buttons don't show up, open **Privacy & Security > Accessibility**, remove Tilty with the **minus** button, then open Tilty again and allow it.
+
+## Build from source
+
+Needs Xcode.
 
 ```bash
 scripts/build-app.sh --install
 ```
 
-This builds `Tilty.app`, copies it to `/Applications` and opens it.
+This builds `Tilty.app`, copies it to `/Applications`, clears the old Accessibility grant and opens it. Without `--install` the app lands in `build/Tilty.app`. Add `--universal` for an Apple Silicon and Intel build.
 
-Then give it Accessibility access, which it needs to move other apps' windows:
-
-1. macOS shows a prompt. Click **Open System Settings**.
-2. In **Privacy & Security > Accessibility**, turn on **Tilty**.
-3. Tilty starts on its own within a second. No restart needed.
-
-If the toolbar doesn't show up a few seconds after you turn Tilty on, quit it from the menu bar and open it again.
-
-To build without installing, run `scripts/build-app.sh`. The app lands in `build/Tilty.app`.
-
-### After a rebuild
-
-The app is signed locally (ad hoc), so macOS treats each new build as a new app. After you rebuild, the old Accessibility switch can look on but stop working. `--install` clears the old grant for you, so you just turn Tilty on again when asked. If you built without `--install`, remove Tilty from the Accessibility list with the minus button and add it again, or run:
+The app is signed locally (ad hoc), so macOS treats each build as a new app. If you built without `--install`, reset the old grant with:
 
 ```bash
 tccutil reset Accessibility app.tilty.Tilty
 ```
+
+### Releasing a new version
+
+1. Put the new version number in `VERSION`.
+2. Add a `## <version>` section to `CHANGELOG.md`. It becomes the release notes.
+3. Commit, then run `scripts/release.sh`. It builds a universal app, packs `Tilty.dmg`, tags the commit and publishes the GitHub release.
+
+Run `scripts/release.sh --dry-run` to build the DMG without publishing.
 
 ## Development
 
