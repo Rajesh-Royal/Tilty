@@ -26,6 +26,12 @@ Tilty is a personal tool built for exactly that.
 - It stays out of the way for full screen windows, dialogs, sheets and minimized windows.
 - Works with multiple displays. The window stays on the screen it's already on.
 
+### More layouts
+
+The small chevron at the end of the toolbar opens a grid of layouts with one click: halves, two-thirds and one-third, one-third and two-thirds, three columns, one tall window with two stacked, and quarters.
+
+Each layout is split into zones. Click the zone where the current window should go and it snaps there. Then your other open windows show up in the empty zones. Click one to drop it in, or press Esc or click anywhere else to skip.
+
 ### Chrome and other Chromium browsers
 
 Chrome puts its tabs right after the traffic lights, so there the toolbar sits at the right end of the tab strip instead. You can change this for any app from the menu bar: **Icons in <App>** then **After the Traffic Lights** or **At the Right End**.
@@ -35,6 +41,7 @@ Chrome puts its tabs right after the traffic lights, so there the toolbar sits a
 The Tilty icon in the menu bar has:
 
 - **Pause Tilty** to hide the toolbar for a while.
+- **Suggest Windows After Left or Right** to also show the window picker for the other side after a quick Left or Right click. Off by default.
 - **Icons in <App>** to pick where the toolbar sits for the current app.
 - **Launch at Login**.
 - **Quit Tilty**.

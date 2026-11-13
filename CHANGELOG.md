@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0
+
+More layouts, like Windows 11 snap layouts, but one click instead of a hover.
+
+### What's new
+
+- **Layout grid.** A small chevron at the end of the toolbar opens a grid of six layouts: halves, two-thirds and one-third, one-third and two-thirds, three columns, one tall window with two stacked, and quarters.
+- **Pick a zone.** Click the part of a layout where the current window should go and it snaps there.
+- **Fill the rest.** After you place a window, your other open windows show up in the empty zones. Click one to drop it in. Press Esc or click anywhere else to skip.
+- **Optional suggestions after Left or Right.** Turn on **Suggest Windows After Left or Right** in the menu bar to get the same window picker for the other side. Off by default, so the quick buttons stay click and done.
+
+### Updating from 0.1.0
+
+Quit Tilty, replace it in Applications with the new one and open it. Each version counts as a new app to macOS, so if the buttons don't show up, open **System Settings > Privacy & Security > Accessibility**, remove Tilty with the **minus** button, then open Tilty again and allow it.
+
 ## 0.1.0
 
 The first release of Tilty. Big one-click buttons in the title bar for tiling windows.
