@@ -53,6 +53,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleVersion</key><string>${BUILD_NUMBER}</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>LSUIElement</key><true/>
+  <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Rajesh Royal</string>
   <key>NSHighResolutionCapable</key><true/>
 </dict>
 </plist>

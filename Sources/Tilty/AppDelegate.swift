@@ -16,6 +16,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         setUpStatusItem()
 
+        if CommandLine.arguments.contains("--preview-about") {
+            About.show()
+            return
+        }
+
         if CommandLine.arguments.contains("--preview") {
             showPreview()
             return
@@ -187,6 +192,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(login)
 
         menu.addItem(.separator())
+        menu.addItem(item("About Tilty", #selector(showAbout)))
+        menu.addItem(item("Check for Updates…", #selector(checkForUpdates)))
+
+        menu.addItem(.separator())
         let quit = item("Quit Tilty", #selector(quit))
         quit.keyEquivalent = "q"
         menu.addItem(quit)
@@ -241,6 +250,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NSApp.activate(ignoringOtherApps: true)
             alert.runModal()
         }
+    }
+
+    @objc private func showAbout() {
+        About.show()
+    }
+
+    /// Tilty has no updater, so this opens the release page with the latest download.
+    @objc private func checkForUpdates() {
+        About.open(About.releases.appendingPathComponent("latest"))
     }
 
     @objc private func quit() {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1
+
+### What's new
+
+- **About Tilty** in the menu bar. It shows the version, with links to the website, the GitHub repo, the release notes and a place to report a problem.
+- **Check for Updates** in the menu bar opens the latest release, so you can see if there's a newer version.
+
+### Updating
+
+Quit Tilty, replace it in Applications with the new one and open it. If the buttons don't show up, open **System Settings > Privacy & Security > Accessibility**, remove Tilty with the **minus** button, then open Tilty again and allow it.
+
 ## 0.2.0
 
 More layouts, like Windows 11 snap layouts, but one click instead of a hover.
