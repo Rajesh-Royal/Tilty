@@ -73,6 +73,9 @@ final class ToolbarPanel: NSPanel {
         if isVisible {
             orderOut(nil)
         }
+        // The panel can vanish under the cursor (after a click), so no exit event arrives.
+        // Clear the highlight so the buttons look normal when the panel comes back.
+        contentView?.subviews.compactMap { $0 as? TileButton }.forEach { $0.resetHighlight() }
     }
 }
 
@@ -138,6 +141,11 @@ final class TileButton: NSView {
         if wasPressed && bounds.contains(point) {
             onClick(action)
         }
+    }
+
+    func resetHighlight() {
+        isHovered = false
+        isPressed = false
     }
 
     override func viewDidChangeEffectiveAppearance() {

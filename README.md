@@ -53,6 +53,8 @@ Then give it Accessibility access, which it needs to move other apps' windows:
 2. In **Privacy & Security > Accessibility**, turn on **Tilty**.
 3. Tilty starts on its own within a second. No restart needed.
 
+If the toolbar doesn't show up a few seconds after you turn Tilty on, quit it from the menu bar and open it again.
+
 To build without installing, run `scripts/build-app.sh`. The app lands in `build/Tilty.app`.
 
 ### After a rebuild
