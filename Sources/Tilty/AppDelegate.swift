@@ -155,9 +155,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(stage)
         }
 
-        let suggest = item("Suggest Windows After Left or Right", #selector(toggleSuggest))
-        suggest.state = preferences.suggestAfterHalves ? .on : .off
-        suggest.isEnabled = trusted
+        let suggest = NSMenuItem()
+        suggest.view = MenuSwitchView(
+            title: "Suggest Windows After Left or Right",
+            isOn: preferences.suggestAfterHalves,
+            isEnabled: trusted
+        ) { [weak self] isOn in
+            self?.preferences.suggestAfterHalves = isOn
+        }
         menu.addItem(suggest)
 
         if trusted, let app = controller.tracker.currentApp, let bundleID = app.bundleIdentifier {
@@ -214,10 +219,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func openStageManagerSettings() {
         StageManager.openSettings()
-    }
-
-    @objc private func toggleSuggest() {
-        preferences.suggestAfterHalves.toggle()
     }
 
     @objc private func choosePlacement(_ sender: NSMenuItem) {
