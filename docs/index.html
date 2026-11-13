@@ -405,6 +405,156 @@
       .picker .t { font-size: 10.5px; }
       .picker .s { font-size: 9.5px; }
     }
+
+    /* Install walkthrough */
+    .setup { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.2fr); gap: 2.5rem 3.5rem; align-items: start; }
+    .setup-demo { position: sticky; top: 1.5rem; }
+    .steps li > div { min-width: 0; }
+    .steps li::before { transition: background .2s; }
+    .steps li[aria-current="step"]::before { background: var(--blue); color: #fff; }
+    .steps li:not([aria-current]) p { opacity: .72; }
+    .step-btn { all: unset; cursor: pointer; border-radius: 6px; }
+    .step-btn:hover { text-decoration: underline; text-underline-offset: .18em; }
+    .step-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    .setup-status { margin: .9rem 0 0; color: var(--muted); font-size: 1rem; min-height: 1.55em; }
+
+    .setup-screen {
+      container-type: inline-size;
+      position: relative; aspect-ratio: 16 / 11; overflow: hidden;
+      border-radius: clamp(12px, 2vw, 20px);
+      background: radial-gradient(120% 80% at 90% 0%, rgba(255,255,255,.18), transparent 60%), linear-gradient(160deg, #5b8def 0%, #7b6fd6 60%, #e58a9a 100%);
+      box-shadow: 0 30px 60px -30px rgba(29, 27, 58, .55), 0 0 0 1px rgba(29, 27, 58, .08);
+      user-select: none; -webkit-user-select: none;
+      font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif; color: #1c1c1e;
+    }
+    .sx { position: absolute; inset: 0; font-size: clamp(8px, 2.15cqw, 13.5px); }
+    .s-menubar {
+      position: absolute; inset: 0 0 auto 0; height: 2em; display: flex; align-items: center; gap: 1.3em; padding: 0 1em;
+      background: rgba(255,255,255,.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: .95em;
+    }
+    .s-menubar span { opacity: .8; }
+    .scene { position: absolute; inset: 2em 0 0 0; display: grid; place-items: center; }
+    .scene[hidden], .s-pane[hidden], .alert[hidden], .s-done[hidden], .copying[hidden] { display: none; }
+    .s-win { background: #fff; border-radius: .8em; overflow: hidden; box-shadow: 0 1.2em 2.6em -1em rgba(20,16,60,.5), 0 0 0 .5px rgba(0,0,0,.2); }
+    .s-title { height: 2.5em; display: flex; align-items: center; gap: .7em; padding: 0 .9em; background: #ececee; border-bottom: 1px solid #d7d7dc; position: relative; }
+    .sx .lights { display: flex; gap: .5em; }
+    .sx .lights i { width: .85em; height: .85em; }
+    .s-name { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; font-size: .95em; pointer-events: none; }
+
+    .finder { width: 74%; position: relative; }
+    .finder-body { display: flex; align-items: center; justify-content: space-between; padding: 2.6em 3em 3em; position: relative; }
+    .drag-app, .apps-folder { display: grid; justify-items: center; gap: .45em; width: 7em; font-size: 1em; }
+    .drag-app { border: 0; background: none; padding: .3em; border-radius: .8em; cursor: grab; position: relative; z-index: 2; touch-action: none; color: inherit; font: inherit; }
+    .drag-app:active { cursor: grabbing; }
+    .drag-app img { width: 5.2em; height: 5.2em; pointer-events: none; filter: drop-shadow(0 .3em .5em rgba(0,0,0,.2)); }
+    .drag-app span, .apps-folder span { font-size: .95em; }
+    .drag-app.dragging { transition: none; }
+    .drag-app.flying { transition: transform .5s cubic-bezier(.4,0,.2,1), opacity .25s .4s; }
+    .drag-app.gone { opacity: 0; }
+    .drag-app.back { transition: transform .3s cubic-bezier(.4,0,.2,1); }
+    .drag-arrow { width: 7em; height: 1.2em; flex: none; }
+    .apps-folder svg { width: 5.4em; height: 4.4em; transition: transform .15s; }
+    .apps-folder.over svg { transform: scale(1.1); }
+    .apps-folder.over span { background: #0a84ff; color: #fff; border-radius: .35em; padding: 0 .35em; }
+    .copying { position: absolute; left: 50%; bottom: .9em; transform: translateX(-50%); display: grid; gap: .35em; justify-items: center; font-size: .85em; color: #555; white-space: nowrap; }
+    .copying i { width: 14em; height: .45em; border-radius: 1em; background: #e5e5ea; overflow: hidden; display: block; }
+    .copying b { display: block; height: 100%; width: 0; background: #0a84ff; animation: copy .7s ease-out forwards; }
+    @keyframes copy { to { width: 100%; } }
+
+    .alert {
+      width: 19em; padding: 1.4em 1.2em 1.1em; border-radius: 1.2em; text-align: center;
+      background: rgba(246,246,248,.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1.5em 3em -1em rgba(10,8,40,.6), 0 0 0 .5px rgba(0,0,0,.25);
+      animation: alert-in .2s ease-out;
+    }
+    #confirm { position: absolute; }
+    .alert-icon { position: relative; display: inline-block; width: 4em; height: 4em; }
+    .alert-icon img { width: 100%; height: 100%; }
+    .alert-icon i { position: absolute; right: -.3em; bottom: -.2em; width: 1.7em; height: 1.7em; border-radius: 50%; background: #ffcc00; color: #1c1c1e; font: 800 1em/1.7em system-ui, sans-serif; font-style: normal; box-shadow: 0 0 0 .15em #f6f6f8; }
+    .alert h4 { margin: .7em 0 .45em; font-size: 1.05em; line-height: 1.3; font-weight: 700; }
+    .alert p { margin: 0 0 1.1em; font-size: .85em; line-height: 1.4; color: #3a3a3c; }
+    .alert-buttons { display: grid; gap: .5em; }
+    .alert-buttons button, .s-btn, #s-next {
+      font: inherit; font-size: .95em; border: 0; cursor: pointer; border-radius: .55em; padding: .55em 1em;
+      background: rgba(0,0,0,.08); color: #1c1c1e;
+    }
+    .alert-buttons button:hover, .s-btn:hover { background: rgba(0,0,0,.14); }
+    .alert-buttons .primary { background: #0a84ff; color: #fff; font-weight: 600; }
+    .alert-buttons .primary:hover { background: #0071e3; }
+    @keyframes alert-in { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+
+    .settings { width: 88%; height: 84%; display: grid; grid-template-columns: 31% 1fr; }
+    .s-side { background: #f0eff4; border-right: 1px solid #e2e1e8; padding: .9em .7em; display: flex; flex-direction: column; gap: .2em; overflow: hidden; }
+    .s-side .lights { margin: 0 0 .9em .2em; }
+    .s-search { height: 1.7em; border-radius: .5em; background: #e2e1e8; margin-bottom: .6em; }
+    .s-item { display: flex; align-items: center; gap: .55em; padding: .35em .45em; border-radius: .45em; font-size: .9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .s-item i, .s-row i { width: 1.25em; height: 1.25em; border-radius: .32em; flex: none; }
+    .s-item.sel { background: #0a84ff; color: #fff; }
+    .s-item.sel i { box-shadow: 0 0 0 1.5px rgba(255,255,255,.85); }
+    .s-pane { padding: 1.1em 1.3em; overflow: hidden; min-width: 0; }
+    .s-pane h5 { margin: 0 0 .9em; font-size: 1.15em; font-weight: 700; }
+    .s-pane h6 { margin: 1.1em 0 .5em; font-size: .9em; font-weight: 700; }
+    .s-desc { margin: 0 0 .8em; font-size: .85em; color: #555; }
+    .s-group { background: #f5f5f7; border-radius: .7em; border: 1px solid #e6e6ea; }
+    .s-row { display: flex; align-items: center; gap: .6em; padding: .65em .8em; font-size: .9em; min-height: 2.6em; }
+    .s-row + .s-row { border-top: 1px solid #e6e6ea; }
+    .s-row em { margin-left: auto; font-style: normal; color: #8e8e93; }
+    .s-row img { width: 1.6em; height: 1.6em; }
+    .s-row.blocked { flex-wrap: wrap; justify-content: space-between; }
+    .s-btn { background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.14), 0 1px 1px rgba(0,0,0,.06); padding: .35em .8em; font-size: .9em; }
+    .tg { margin-left: auto; width: 2.5em; height: 1.45em; border-radius: 1em; border: 0; padding: 0; background: #d9d9de; position: relative; cursor: pointer; flex: none; transition: background .2s; display: block; }
+    .tg::after { content: ""; position: absolute; top: .15em; left: .15em; width: 1.15em; height: 1.15em; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .2s; }
+    .tg[aria-checked="true"], .tg.on { background: #0a84ff; }
+    .tg[aria-checked="true"]::after, .tg.on::after { left: 1.2em; }
+    span.tg { cursor: default; }
+
+    .ready { width: 70%; }
+    .mini-tilty { display: flex; align-items: center; gap: .2em; padding: .2em; background: #fff; border-radius: .5em; box-shadow: 0 0 0 .5px rgba(0,0,0,.14), 0 1px 3px rgba(0,0,0,.08); animation: alert-in .3s .2s ease-out both; }
+    .mini-tilty i { width: 1.9em; height: 1.4em; border-radius: .35em; display: block; background: no-repeat center / 1.1em .85em; }
+    .mini-tilty i:nth-child(1) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14' fill='none'%3E%3Crect x='.75' y='.75' width='16.5' height='12.5' rx='2.8' stroke='%233a3a3c' stroke-width='1.5'/%3E%3Crect x='3.2' y='3.2' width='11.6' height='7.6' rx='1.2' fill='%233a3a3c'/%3E%3C/svg%3E"); }
+    .mini-tilty i:nth-child(2) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14' fill='none'%3E%3Crect x='.75' y='.75' width='16.5' height='12.5' rx='2.8' stroke='%233a3a3c' stroke-width='1.5'/%3E%3Crect x='3.2' y='3.2' width='5.6' height='7.6' rx='1.2' fill='%233a3a3c'/%3E%3C/svg%3E"); }
+    .mini-tilty i:nth-child(3) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14' fill='none'%3E%3Crect x='.75' y='.75' width='16.5' height='12.5' rx='2.8' stroke='%233a3a3c' stroke-width='1.5'/%3E%3Crect x='9.2' y='3.2' width='5.6' height='7.6' rx='1.2' fill='%233a3a3c'/%3E%3C/svg%3E"); }
+    .mini-tilty b { width: .9em; height: .9em; margin: 0 .2em 0 .35em; border-left: 1px solid rgba(0,0,0,.16); background: no-repeat right center / .6em url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M1.5 3.5 5 7l3.5-3.5' stroke='%233a3a3c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); padding-left: .35em; box-sizing: content-box; }
+    .ready-body { padding: 2.2em 1.6em 2.6em; display: grid; gap: .4em; font-size: .95em; color: #3a3a3c; }
+    .ready-body strong { font-size: 1.3em; color: #1c1c1e; }
+
+    .s-done {
+      position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); z-index: 5;
+      display: flex; align-items: center; gap: .7em; white-space: nowrap;
+      padding: .45em .45em .45em .8em; border-radius: 1em;
+      background: #1d1b3a; color: #fff; font-size: .95em;
+      box-shadow: 0 .8em 2em -.6em rgba(0,0,0,.6);
+      animation: alert-in .2s ease-out;
+    }
+    .s-done .tick { width: 1.5em; height: 1.5em; border-radius: 50%; background: #34c759; display: grid; place-items: center; font-weight: 800; font-size: .9em; }
+    #s-next { background: #fff; color: #1d1b3a; font-weight: 600; }
+    #s-next:hover { background: #e8e6f7; }
+
+    /* The thing to click next gets a soft pulsing ring. */
+    .sx [data-target].pulse, .drag-app.pulse { animation: ring 1.6s ease-out infinite; }
+    @keyframes ring {
+      0% { box-shadow: 0 0 0 0 rgba(79,127,232,.75); }
+      70%, 100% { box-shadow: 0 0 0 .7em rgba(79,127,232,0); }
+    }
+    .sx button:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }
+
+    @media (max-width: 900px) {
+      .setup { grid-template-columns: 1fr; }
+      .setup-demo { position: static; order: -1; }
+    }
+    @media (max-width: 520px) {
+      .setup-screen { aspect-ratio: 4 / 3.7; }
+      .finder { width: 92%; }
+      .finder-body { padding: 2em 1.2em 2.8em; }
+      .settings { width: 94%; height: 88%; grid-template-columns: 1fr; }
+      .s-side { display: none; }
+      .alert { width: 17em; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sx [data-target].pulse, .drag-app.pulse, .alert, .s-done, .mini-tilty { animation: none; }
+      .sx [data-target].pulse, .drag-app.pulse { box-shadow: 0 0 0 .3em rgba(79,127,232,.6); }
+      .drag-app.flying, .drag-app.back, .tg, .tg::after { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -553,26 +703,139 @@
 
     <section class="wrap block" aria-labelledby="install">
       <h2 id="install">Install it in a minute.</h2>
-      <ol class="steps">
-        <li>
-          <div>
-            <h3>Download and drag</h3>
-            <p><a href="https://github.com/Rajesh-Royal/Tilty/releases/latest/download/Tilty.dmg">Download Tilty.dmg</a>, open it and drag Tilty into your Applications folder.</p>
+      <div class="setup">
+        <ol class="steps" id="setup-steps">
+          <li data-step="0" aria-current="step">
+            <div>
+              <h3><button type="button" class="step-btn">Download and drag</button></h3>
+              <p><a href="https://github.com/Rajesh-Royal/Tilty/releases/latest/download/Tilty.dmg">Download Tilty.dmg</a>, open it and drag Tilty into your Applications folder.</p>
+            </div>
+          </li>
+          <li data-step="1">
+            <div>
+              <h3><button type="button" class="step-btn">Open it the first time</button></h3>
+              <p>Tilty isn't from the App Store, so macOS asks you to confirm once. Open Tilty and click Done on the warning. Then go to System Settings, Privacy &amp; Security, scroll down and click Open Anyway next to Tilty.</p>
+            </div>
+          </li>
+          <li data-step="2">
+            <div>
+              <h3><button type="button" class="step-btn">Allow Accessibility access</button></h3>
+              <p>Tilty asks for this so it can move other apps' windows. Click Open System Settings and turn on Tilty. Now click into any window and the buttons are right there, next to the traffic lights.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="setup-demo">
+          <div class="setup-screen" role="group" aria-label="Interactive preview of installing Tilty">
+            <div class="sx">
+              <div class="s-menubar" aria-hidden="true">
+                <svg width="12" height="14" viewBox="0 0 13.4 14.6" fill="#1c1c1e"><path d="M7 4.2C5.6 4.2 4.6 3.4 3.4 3.4 1.6 3.4 0 4.9 0 7.6c0 3.2 2.2 7 3.9 7 1 0 1.5-.6 3-.6s1.9.6 3 .6c1.5 0 2.9-2.4 3.5-4-1.6-.7-2.4-2-2.4-3.4 0-1.3.7-2.3 1.6-2.9-.7-.9-1.9-.9-2.3-.9-1.2 0-2.1.8-3.3.8Z"/><path d="M7.1 3.1C7 1.7 8.3.3 9.7.2c.1 1.5-1.2 2.9-2.6 2.9Z"/></svg>
+                <b id="s-app">Finder</b><span>File</span><span>Edit</span><span>View</span>
+              </div>
+
+              <!-- Step 1: the disk image -->
+              <div class="scene" data-scene="dmg">
+                <div class="s-win finder">
+                  <div class="s-title"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="s-name">Tilty</span></div>
+                  <div class="finder-body">
+                    <button type="button" class="drag-app" id="drag-app" aria-label="Move Tilty to Applications"><img src="icon.svg" alt="" draggable="false"><span>Tilty</span></button>
+                    <svg class="drag-arrow" viewBox="0 0 120 20" aria-hidden="true"><path d="M4 10h104" stroke="#b9b9c3" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round"/><path d="M104 3l9 7-9 7" fill="none" stroke="#b9b9c3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <div class="apps-folder" id="apps-folder">
+                      <svg viewBox="0 0 64 52" aria-hidden="true"><path d="M4 8a4 4 0 0 1 4-4h15l6 6h27a4 4 0 0 1 4 4v4H4z" fill="#4fa6ec"/><rect x="2" y="13" width="60" height="37" rx="4" fill="#74bdf7"/><path d="M24 43 32 23l8 20M27.2 36h9.6" stroke="#2f86d0" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span>Applications</span>
+                    </div>
+                  </div>
+                  <div class="copying" id="copying" hidden><span>Copying Tilty to Applications</span><i><b></b></i></div>
+                </div>
+              </div>
+
+              <!-- Step 2a: the first open warning -->
+              <div class="scene" data-scene="blocked" hidden>
+                <div class="alert" role="alertdialog" aria-labelledby="al1">
+                  <span class="alert-icon"><img src="icon.svg" alt=""><i aria-hidden="true">!</i></span>
+                  <h4 id="al1">“Tilty” Not Opened</h4>
+                  <p>Apple could not verify “Tilty” is free of malware that may harm your Mac or compromise your privacy.</p>
+                  <div class="alert-buttons">
+                    <button type="button" class="primary" data-go="security" data-target>Done</button>
+                    <button type="button" data-wrong="That would delete Tilty. Click Done instead.">Move to Trash</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 2b and 3b: System Settings -->
+              <div class="scene" data-scene="settings" hidden>
+                <div class="s-win settings">
+                  <div class="s-side" aria-hidden="true">
+                    <span class="lights"><i></i><i></i><i></i></span>
+                    <span class="s-search"></span>
+                    <span class="s-item"><i style="background:#0a84ff"></i>Wi‑Fi</span>
+                    <span class="s-item"><i style="background:#0a84ff"></i>Bluetooth</span>
+                    <span class="s-item"><i style="background:#34c759"></i>Battery</span>
+                    <span class="s-item"><i style="background:#8e8e93"></i>General</span>
+                    <span class="s-item"><i style="background:#1c1c1e"></i>Desktop &amp; Dock</span>
+                    <span class="s-item sel"><i style="background:#3d7bf6"></i>Privacy &amp; Security</span>
+                  </div>
+                  <div class="s-pane" data-pane="security">
+                    <h5>Privacy &amp; Security</h5>
+                    <div class="s-group" aria-hidden="true">
+                      <span class="s-row"><i style="background:#0a84ff"></i>Location Services<em>On</em></span>
+                      <span class="s-row"><i style="background:#0a84ff"></i>Accessibility<em>›</em></span>
+                    </div>
+                    <h6>Security</h6>
+                    <div class="s-group">
+                      <span class="s-row blocked">“Tilty” was blocked to protect your Mac.<button type="button" class="s-btn" data-go="confirm" data-target>Open Anyway</button></span>
+                    </div>
+                  </div>
+                  <div class="s-pane" data-pane="ax" hidden>
+                    <h5>‹ Accessibility</h5>
+                    <p class="s-desc">Allow the applications below to control your computer.</p>
+                    <div class="s-group">
+                      <span class="s-row"><img src="icon.svg" alt="">Tilty<button type="button" class="tg" id="ax-toggle" role="switch" aria-checked="false" aria-label="Allow Tilty" data-target></button></span>
+                      <span class="s-row" aria-hidden="true"><i style="background:#1c1c1e"></i>Terminal<span class="tg on"></span></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="alert" id="confirm" role="alertdialog" aria-labelledby="al2" hidden>
+                  <span class="alert-icon"><img src="icon.svg" alt=""><i aria-hidden="true">!</i></span>
+                  <h4 id="al2">Open “Tilty”?</h4>
+                  <p>Apple can't check it for malicious software. Open it only if you trust where it came from.</p>
+                  <div class="alert-buttons">
+                    <button type="button" class="primary" data-go="axPrompt" data-target>Open Anyway</button>
+                    <button type="button" data-wrong="Tilty won't open without this. Click Open Anyway.">Cancel</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 3a: the Accessibility prompt -->
+              <div class="scene" data-scene="axPrompt" hidden>
+                <div class="alert" role="alertdialog" aria-labelledby="al3">
+                  <span class="alert-icon"><img src="icon.svg" alt=""></span>
+                  <h4 id="al3">“Tilty” would like to control this computer using accessibility features.</h4>
+                  <p>Grant access to this application in Privacy &amp; Security settings, located in System Settings.</p>
+                  <div class="alert-buttons">
+                    <button type="button" class="primary" data-go="ax" data-target>Open System Settings</button>
+                    <button type="button" data-wrong="Tilty can't move windows without this. Click Open System Settings.">Deny</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Done -->
+              <div class="scene" data-scene="ready" hidden>
+                <div class="s-win ready">
+                  <div class="s-title">
+                    <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="mini-tilty" aria-hidden="true"><i></i><i></i><i></i><b></b></span>
+                  </div>
+                  <div class="ready-body"><strong>Tilty is ready.</strong><span>The buttons sit next to the traffic lights of the window you're using.</span></div>
+                </div>
+              </div>
+
+              <div class="s-done" id="s-done" hidden><span class="tick" aria-hidden="true">✓</span><span id="s-done-text"></span><button type="button" id="s-next"></button></div>
+            </div>
           </div>
-        </li>
-        <li>
-          <div>
-            <h3>Open it the first time</h3>
-            <p>Tilty isn't from the App Store, so macOS asks you to confirm once. Open Tilty and click Done on the warning. Then go to System Settings, Privacy &amp; Security, scroll down and click Open Anyway next to Tilty.</p>
-          </div>
-        </li>
-        <li>
-          <div>
-            <h3>Allow Accessibility access</h3>
-            <p>Tilty asks for this so it can move other apps' windows. Click Open System Settings and turn on Tilty. Now click into any window and the buttons are right there, next to the traffic lights.</p>
-          </div>
-        </li>
-      </ol>
+          <p class="setup-status" id="setup-status" aria-live="polite">Drag Tilty onto the Applications folder.</p>
+        </div>
+      </div>
       <p class="needs">See what's new in each version in the <a href="https://github.com/Rajesh-Royal/Tilty/releases">release notes</a>. Prefer to build it yourself? Clone the repo and run <code>scripts/build-app.sh --install</code>.</p>
     </section>
   </main>
@@ -858,6 +1121,167 @@
       placeHint();
       window.addEventListener('resize', placeHint);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeHint);
+    })();
+
+    // Install walkthrough. Each step is something to do, like on a real Mac.
+    (function () {
+      var root = document.querySelector('.setup');
+      if (!root) return;
+      var steps = root.querySelectorAll('#setup-steps li');
+      var status = document.getElementById('setup-status');
+      var appName = document.getElementById('s-app');
+      var done = document.getElementById('s-done');
+      var doneText = document.getElementById('s-done-text');
+      var next = document.getElementById('s-next');
+      var app = document.getElementById('drag-app');
+      var folder = document.getElementById('apps-folder');
+      var copying = document.getElementById('copying');
+      var confirmBox = document.getElementById('confirm');
+      var toggle = document.getElementById('ax-toggle');
+      var nextAction = null;
+
+      var scenes = {
+        dmg:      { scene: 'dmg', step: 0, app: 'Finder', target: app, say: 'Drag Tilty onto the Applications folder.' },
+        blocked:  { scene: 'blocked', step: 1, app: 'Finder', say: 'You opened Tilty. macOS warns you once because it isn’t from the App Store. Click Done.' },
+        security: { scene: 'settings', pane: 'security', step: 1, app: 'System Settings', say: 'In System Settings, Privacy & Security, scroll down and click Open Anyway.' },
+        confirm:  { scene: 'settings', pane: 'security', confirm: true, step: 1, app: 'System Settings', say: 'Confirm with Open Anyway. You may need your password or Touch ID.' },
+        axPrompt: { scene: 'axPrompt', step: 2, app: 'Tilty', say: 'Tilty opens and asks for Accessibility access. Click Open System Settings.' },
+        ax:       { scene: 'settings', pane: 'ax', step: 2, app: 'System Settings', target: toggle, say: 'Turn on Tilty.' },
+        ready:    { scene: 'ready', step: 2, app: 'Notes', say: 'That’s it. Click into any window and the buttons are right there.' }
+      };
+      var firstOfStep = ['dmg', 'blocked', 'axPrompt'];
+
+      function show(name) {
+        var c = scenes[name];
+        root.querySelectorAll('.scene').forEach(function (el) { el.hidden = el.dataset.scene !== c.scene; });
+        root.querySelectorAll('.s-pane').forEach(function (el) { el.hidden = el.dataset.pane !== c.pane; });
+        confirmBox.hidden = !c.confirm;
+        steps.forEach(function (li, i) {
+          if (i === c.step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+        });
+        appName.textContent = c.app;
+        status.textContent = c.say;
+        hideDone();
+
+        // Pulse the thing to click: the scene's own target, or its marked button.
+        root.querySelectorAll('.pulse').forEach(function (el) { el.classList.remove('pulse'); });
+        var target = c.target;
+        if (!target) {
+          var holder = c.confirm ? confirmBox : root.querySelector('.scene[data-scene="' + c.scene + '"]');
+          target = holder.querySelector('[data-target]');
+        }
+        if (target) target.classList.add('pulse');
+
+        if (name === 'dmg') resetDrag();
+        if (name === 'ax') toggle.setAttribute('aria-checked', 'false');
+        if (name === 'ready') showDone('Tilty is installed', 'Start over', function () { show('dmg'); });
+      }
+
+      function showDone(text, label, action) {
+        doneText.textContent = text;
+        next.textContent = label;
+        nextAction = action;
+        done.hidden = false;
+      }
+      function hideDone() { done.hidden = true; nextAction = null; }
+      next.addEventListener('click', function () { if (nextAction) nextAction(); });
+
+      root.querySelectorAll('[data-go]').forEach(function (b) {
+        b.addEventListener('click', function () { show(b.dataset.go); });
+      });
+      root.querySelectorAll('[data-wrong]').forEach(function (b) {
+        b.addEventListener('click', function () { status.textContent = b.dataset.wrong; });
+      });
+      steps.forEach(function (li, i) {
+        li.querySelector('.step-btn').addEventListener('click', function () { show(firstOfStep[i]); });
+      });
+
+      toggle.addEventListener('click', function () {
+        if (toggle.getAttribute('aria-checked') === 'true') return;
+        toggle.setAttribute('aria-checked', 'true');
+        toggle.classList.remove('pulse');
+        status.textContent = 'Tilty is on.';
+        setTimeout(function () { show('ready'); }, 650);
+      });
+
+      // Drag Tilty onto Applications. A plain click or Enter moves it too.
+      var start = null, moved = false;
+      function resetDrag() {
+        app.className = 'drag-app pulse';
+        app.style.transform = '';
+        folder.classList.remove('over');
+        copying.hidden = true;
+        app.disabled = false;
+      }
+      function overFolder() {
+        var a = app.getBoundingClientRect(), f = folder.getBoundingClientRect();
+        var cx = a.left + a.width / 2, cy = a.top + a.height / 2;
+        return cx > f.left - 10 && cx < f.right + 10 && cy > f.top - 10 && cy < f.bottom + 10;
+      }
+      function dropIn() {
+        var a = app.getBoundingClientRect(), f = folder.getBoundingClientRect();
+        var m = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(app.style.transform) || [0, 0, 0];
+        var dx = +m[1] + (f.left + f.width / 2) - (a.left + a.width / 2);
+        var dy = +m[2] + (f.top + f.height / 2) - (a.top + a.height / 2);
+        app.classList.remove('dragging', 'pulse');
+        app.classList.add('flying');
+        app.disabled = true;
+        folder.classList.add('over');
+        requestAnimationFrame(function () {
+          app.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(.35)';
+          app.classList.add('gone');
+        });
+        setTimeout(function () {
+          folder.classList.remove('over');
+          copying.hidden = false;
+          status.textContent = 'Copying Tilty to Applications…';
+        }, 500);
+        setTimeout(function () {
+          copying.hidden = true;
+          // It's a copy, so the original stays in the disk image.
+          app.className = 'drag-app';
+          app.style.transform = '';
+          status.textContent = 'Tilty is in Applications. Now open it.';
+          showDone('Tilty is in Applications', 'Open Tilty', function () { show('blocked'); });
+        }, 1350);
+      }
+      app.addEventListener('pointerdown', function (e) {
+        if (app.disabled) return;
+        start = { x: e.clientX, y: e.clientY };
+        moved = false;
+        app.setPointerCapture(e.pointerId);
+        app.classList.remove('back', 'pulse');
+        app.classList.add('dragging');
+      });
+      app.addEventListener('pointermove', function (e) {
+        if (!start) return;
+        var dx = e.clientX - start.x, dy = e.clientY - start.y;
+        if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+        app.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+        folder.classList.toggle('over', overFolder());
+      });
+      function endDrag() {
+        if (!start) return;
+        start = null;
+        if (!moved || overFolder()) { dropIn(); return; }
+        app.classList.remove('dragging');
+        app.classList.add('back', 'pulse');
+        app.style.transform = '';
+        folder.classList.remove('over');
+        status.textContent = 'Almost. Drop it right on the Applications folder.';
+      }
+      app.addEventListener('pointerup', endDrag);
+      app.addEventListener('pointercancel', function () {
+        if (!start) return;
+        start = null;
+        app.classList.remove('dragging');
+        app.classList.add('back', 'pulse');
+        app.style.transform = '';
+        folder.classList.remove('over');
+      });
+      app.addEventListener('click', function (e) { if (e.detail === 0 && !app.disabled) dropIn(); });
+
+      show('dmg');
     })();
 
     // Show the latest released version next to the download button.
