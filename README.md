@@ -1,4 +1,4 @@
-# Tilty
+# <img src="docs/icon.svg" width="40" align="top" alt=""> Tilty
 
 Tilty puts three big buttons in the title bar of whatever window you're using: **Fill**, **Left Half** and **Right Half**. One click and the window moves. No hovering, no waiting, no menus.
 

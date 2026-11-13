@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <title>Tilty</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b8def"/>
+      <stop offset="0.55" stop-color="#7b6fd6"/>
+      <stop offset="1" stop-color="#e58a9a"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <rect x="4" y="4" width="120" height="60" rx="28" fill="#ffffff" fill-opacity="0.08"/>
+  <!-- rectangle.split.2x1, the same glyph as the menu bar icon -->
+  <g fill="none" stroke="#ffffff" stroke-width="7" stroke-linejoin="round">
+    <rect x="26" y="38" width="76" height="52" rx="10"/>
+    <line x1="64" y1="40" x2="64" y2="88"/>
+  </g>
+  <rect x="31.5" y="43.5" width="28" height="41" rx="5" fill="#ffffff" fill-opacity="0.35"/>
+</svg>
