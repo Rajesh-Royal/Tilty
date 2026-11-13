@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- Source for docs/og.png (1200x630). Render with scripts/make-og.sh -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    background: #15142a; color: #ecebff;
+    font-family: "Bricolage Grotesque", system-ui, sans-serif;
+    display: grid; grid-template-columns: 470px 1fr; align-items: center;
+    padding: 0 0 0 72px; gap: 40px;
+  }
+  .brand { display: flex; align-items: center; gap: 16px; font-weight: 800; font-size: 40px; margin-bottom: 40px; }
+  .brand img { width: 64px; height: 64px; }
+  h1 { font-size: 66px; line-height: 1; letter-spacing: -0.025em; font-weight: 800; margin: 0 0 24px; }
+  p { font-size: 25px; line-height: 1.4; color: #a9a6cf; margin: 0; }
+  .url { margin-top: 36px; font-size: 21px; font-weight: 600; color: #ecebff; opacity: .75; }
+
+  .desk {
+    position: relative; width: 760px; height: 500px; margin-right: -90px;
+    border-radius: 26px 0 0 26px; overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 10% 100%, rgba(255,255,255,.16), transparent 60%),
+      linear-gradient(135deg, #5b8def 0%, #7b6fd6 55%, #e58a9a 100%);
+    box-shadow: 0 30px 70px -20px rgba(0,0,0,.6);
+  }
+  .menubar {
+    position: absolute; inset: 0 0 auto 0; height: 30px; padding: 0 16px;
+    display: flex; align-items: center; gap: 18px;
+    background: rgba(255,255,255,.5); color: #1c1c1e; font-size: 14px;
+  }
+  .menubar b { font-weight: 700; }
+  .win {
+    position: absolute; top: 30px; height: 420px; background: #fff; overflow: hidden;
+    border-radius: 6px; box-shadow: 0 0 0 .5px rgba(0,0,0,.2);
+  }
+  .left { left: 0; width: 380px; }
+  .right { left: 380px; width: 380px; }
+  .titlebar { height: 42px; background: #ececee; border-bottom: 1px solid #d7d7dc; display: flex; align-items: center; padding-left: 14px; gap: 10px; }
+  .lights { display: flex; gap: 8px; }
+  .lights i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+  .lights i:nth-child(1) { background: #ff5f57; } .lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+  .right .lights i { background: #c7c7cc; }
+  .tilty { display: flex; gap: 2px; padding: 2px; background: #fff; border-radius: 9px; box-shadow: 0 0 0 .5px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.08); }
+  .tilty span { width: 40px; height: 30px; border-radius: 7px; display: grid; place-items: center; color: #3a3a3c; }
+  .tilty span.on { background: rgba(79,127,232,.18); color: #2e5fcf; }
+  .tilty svg { width: 20px; height: 15px; }
+  .content { display: flex; height: 378px; }
+  .side { width: 110px; background: #f4f4f6; border-right: 1px solid #e6e6ea; padding: 18px 14px; }
+  .main { flex: 1; padding: 20px; }
+  .bar { height: 10px; border-radius: 5px; background: #e3e3e8; margin-bottom: 14px; }
+  .dock { position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%); display: flex; gap: 9px; padding: 7px 10px; background: rgba(255,255,255,.32); border: 1px solid rgba(255,255,255,.45); border-radius: 16px; }
+  .dock i { width: 30px; height: 30px; border-radius: 9px; display: block; }
+  .hand { position: absolute; left: 150px; top: 66px; width: 34px; height: 41px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
+</style>
+</head>
+<body>
+  <div>
+    <div class="brand"><img src="../../docs/icon.svg" alt="">Tilty</div>
+    <h1>Big buttons for tiling windows.</h1>
+    <p>One click Fill, Left half and Right half in every Mac title bar. Made for trackpad people.</p>
+    <div class="url">rajesh-royal.github.io/Tilty</div>
+  </div>
+
+  <div class="desk">
+    <div class="menubar">
+      <svg width="14" height="16" viewBox="0 0 13.4 14.6" fill="#1c1c1e"><path d="M7 4.2C5.6 4.2 4.6 3.4 3.4 3.4 1.6 3.4 0 4.9 0 7.6c0 3.2 2.2 7 3.9 7 1 0 1.5-.6 3-.6s1.9.6 3 .6c1.5 0 2.9-2.4 3.5-4-1.6-.7-2.4-2-2.4-3.4 0-1.3.7-2.3 1.6-2.9-.7-.9-1.9-.9-2.3-.9-1.2 0-2.1.8-3.3.8Z"/><path d="M7.1 3.1C7 1.7 8.3.3 9.7.2c.1 1.5-1.2 2.9-2.6 2.9Z"/></svg>
+      <b>Notes</b><span>File</span><span>Edit</span><span>View</span>
+      <svg style="margin-left:auto" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#1c1c1e" stroke-width="1.4"><rect x="2.7" y="2.7" width="4.6" height="12.6" rx="1.3"/><rect x="10.7" y="2.7" width="4.6" height="4.6" rx="1.3"/><rect x="10.7" y="10.7" width="4.6" height="4.6" rx="1.3"/></svg>
+    </div>
+
+    <div class="win left">
+      <div class="titlebar">
+        <span class="lights"><i></i><i></i><i></i></span>
+        <span class="tilty">
+          <span><svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.5"/><rect x="3.2" y="3.2" width="11.6" height="7.6" rx="1.2" fill="currentColor"/></svg></span>
+          <span class="on"><svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.5"/><rect x="3.2" y="3.2" width="5.6" height="7.6" rx="1.2" fill="currentColor"/></svg></span>
+          <span><svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.5"/><rect x="9.2" y="3.2" width="5.6" height="7.6" rx="1.2" fill="currentColor"/></svg></span>
+        </span>
+      </div>
+      <div class="content">
+        <div class="side"><div class="bar" style="width:80%"></div><div class="bar" style="width:60%"></div><div class="bar" style="width:70%"></div></div>
+        <div class="main"><div class="bar" style="width:55%;height:13px;background:#dedee6"></div><div class="bar" style="width:90%"></div><div class="bar" style="width:75%"></div><div class="bar" style="width:82%"></div><div class="bar" style="width:64%"></div></div>
+      </div>
+    </div>
+
+    <div class="win right">
+      <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span></div>
+      <div class="content">
+        <div class="main"><div class="bar" style="width:50%;height:13px;background:#dedee6"></div><div class="bar" style="width:86%"></div><div class="bar" style="width:70%"></div><div class="bar" style="width:78%"></div></div>
+      </div>
+    </div>
+
+    <svg class="hand" viewBox="0 0 24 29">
+      <g fill="#111" stroke="#111" stroke-width="2.6" stroke-linejoin="round">
+        <rect x="7" y="1" width="4.4" height="15" rx="2.2"/><rect x="11.2" y="8.6" width="4.2" height="8" rx="2.1"/><rect x="15.2" y="9.8" width="4.2" height="7" rx="2.1"/><rect x="4.6" y="12.5" width="16.6" height="13.5" rx="5"/><rect x="1.4" y="12.6" width="4.4" height="9" rx="2.2" transform="rotate(-28 3.6 17)"/>
+      </g>
+      <g fill="#fff">
+        <rect x="7" y="1" width="4.4" height="15" rx="2.2"/><rect x="11.2" y="8.6" width="4.2" height="8" rx="2.1"/><rect x="15.2" y="9.8" width="4.2" height="7" rx="2.1"/><rect x="4.6" y="12.5" width="16.6" height="13.5" rx="5"/><rect x="1.4" y="12.6" width="4.4" height="9" rx="2.2" transform="rotate(-28 3.6 17)"/>
+      </g>
+      <g stroke="#111" stroke-width="1" stroke-linecap="round"><line x1="11.3" y1="12.8" x2="11.3" y2="16"/><line x1="15.3" y1="13.4" x2="15.3" y2="16.2"/></g>
+    </svg>
+
+    <div class="dock"><i style="background:#5ac8fa"></i><i style="background:#34c759"></i><i style="background:#ff9f0a"></i><i style="background:#ff375f"></i><i style="background:#bf5af2"></i><i style="background:#64d2ff"></i><i style="background:#8e8e93"></i></div>
+  </div>
+</body>
+</html>
