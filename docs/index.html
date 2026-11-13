@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tilty: one click window tiling for Mac</title>
+  <meta name="description" content="Tilty puts big Fill, Left half and Right half buttons in the title bar of the window you're using. One click with the trackpad and it's done.">
+  <meta property="og:title" content="Tilty">
+  <meta property="og:description" content="Big buttons in the title bar for tiling windows on a Mac. One click, no hovering, no shortcuts.">
+  <meta property="og:url" content="https://rajesh-royal.github.io/Tilty/">
+  <meta property="og:type" content="website">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3f2fb;
+      --paper-2: #e8e6f7;
+      --ink: #1d1b3a;
+      --muted: #57557a;
+      --blue: #4f7fe8;
+      --violet: #7b6fd6;
+      --rose: #e58a9a;
+      --line: #d6d3ee;
+      --code-bg: #1d1b3a;
+      --code-ink: #ecebff;
+      --focus: #4f7fe8;
+      --measure: 34rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #15142a;
+        --paper-2: #1e1d3a;
+        --ink: #ecebff;
+        --muted: #a9a6cf;
+        --line: #33315a;
+        --code-bg: #0d0c1f;
+        --code-ink: #ecebff;
+        --focus: #8fb0ff;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Bricolage Grotesque", system-ui, sans-serif;
+      font-size: 1.125rem;
+      line-height: 1.55;
+      font-optical-sizing: auto;
+    }
+    a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+
+    .wrap { width: min(72rem, 100% - 2rem); margin-inline: auto; }
+
+    /* Top bar */
+    .top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-block: 1.25rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.35rem; text-decoration: none; }
+    .brand img { width: 36px; height: 36px; }
+    .top nav a { font-weight: 600; text-decoration: none; padding: 0.5rem 0.25rem; }
+    .top nav a:hover { text-decoration: underline; }
+
+    /* Hero */
+    .hero { padding-block: clamp(2rem, 6vw, 4.5rem) 2rem; }
+    .hero h1 {
+      font-size: clamp(2.6rem, 7.4vw, 5.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.025em;
+      font-weight: 800;
+      margin: 0 0 1.4rem;
+      max-width: 13ch;
+    }
+    .hero p { font-size: clamp(1.15rem, 1.9vw, 1.35rem); color: var(--muted); max-width: var(--measure); margin: 0 0 2rem; }
+    .cta {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      background: var(--ink); color: var(--paper);
+      font-weight: 600; font-size: 1.1rem;
+      padding: 0.95rem 1.4rem; border-radius: 14px; text-decoration: none;
+      min-height: 52px;
+    }
+    .cta:hover { text-decoration: none; background: var(--violet); color: #fff; }
+    .cta svg { width: 20px; height: 20px; }
+
+    /* Live demo */
+    .demo { margin-top: clamp(2.5rem, 5vw, 4rem); }
+    .desktop {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      border-radius: clamp(12px, 2vw, 22px);
+      overflow: hidden;
+      background:
+        radial-gradient(120% 80% at 10% 100%, rgba(255,255,255,.16), transparent 60%),
+        linear-gradient(135deg, #5b8def 0%, #7b6fd6 55%, #e58a9a 100%);
+      box-shadow: 0 30px 60px -30px rgba(29, 27, 58, .55), 0 0 0 1px rgba(29, 27, 58, .08);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .menubar {
+      position: absolute; inset: 0 0 auto 0; height: 28px;
+      display: flex; align-items: center; gap: 18px; padding: 0 14px;
+      background: rgba(255,255,255,.5);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      color: #1c1c1e; font-size: 13px; font-weight: 600;
+    }
+    .menubar .menu { font-weight: 400; opacity: .8; }
+    .menubar .menu.app { font-weight: 700; opacity: 1; }
+    .menubar .extras { margin-left: auto; display: flex; align-items: center; gap: 14px; font-weight: 500; }
+    .menubar svg { display: block; }
+
+    .screen { position: absolute; top: 28px; left: 0; right: 0; bottom: 62px; }
+
+    .dock {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px; padding: 7px 9px;
+      background: rgba(255,255,255,.32); border: 1px solid rgba(255,255,255,.45);
+      border-radius: 16px;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .dock span { width: 32px; height: 32px; border-radius: 9px; display: block; }
+
+    .win {
+      position: absolute;
+      left: var(--x); top: var(--y); width: var(--w); height: var(--h);
+      background: #fff;
+      border-radius: 11px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px -12px rgba(20, 16, 60, .45), 0 0 0 .5px rgba(0,0,0,.2);
+      transition: left .34s cubic-bezier(.4,0,.2,1), top .34s cubic-bezier(.4,0,.2,1),
+                  width .34s cubic-bezier(.4,0,.2,1), height .34s cubic-bezier(.4,0,.2,1),
+                  border-radius .34s;
+    }
+    .win.tiled { border-radius: 4px; }
+    .win.back { opacity: .85; background: #f6f6f8; z-index: 0; }
+    .win.front { z-index: 1; }
+    .titlebar {
+      height: 38px; background: #ececee; border-bottom: 1px solid #d7d7dc;
+      display: flex; align-items: center; padding-left: 13px; gap: 8px;
+    }
+    .lights { display: flex; gap: 8px; }
+    .lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+    .lights i:nth-child(1) { background: #ff5f57; }
+    .lights i:nth-child(2) { background: #febc2e; }
+    .lights i:nth-child(3) { background: #28c840; }
+    .back .lights i { background: #c7c7cc; }
+
+    .tilty {
+      display: flex; gap: 2px; padding: 2px; margin-left: 6px;
+      background: rgba(255,255,255,.9);
+      border-radius: 8px;
+      box-shadow: 0 0 0 .5px rgba(0,0,0,.14), 0 1px 3px rgba(0,0,0,.08);
+      transition: opacity .15s;
+    }
+    .win.moving .tilty { opacity: 0; transition: none; }
+    .tilty button {
+      width: 36px; height: 28px; border: 0; border-radius: 6px; padding: 0;
+      background: transparent; color: #3a3a3c; cursor: pointer;
+      display: grid; place-items: center;
+    }
+    .tilty button:hover { background: rgba(0,0,0,.1); color: #000; }
+    .tilty button:active { background: rgba(0,0,0,.2); }
+    .tilty button[aria-pressed="true"] { background: rgba(79,127,232,.16); color: #2e5fcf; }
+    .tilty svg { width: 18px; height: 14px; }
+
+    .content { display: flex; height: calc(100% - 38px); }
+    .side { width: 26%; max-width: 150px; background: #f4f4f6; border-right: 1px solid #e6e6ea; padding: 16px 14px; }
+    .main { flex: 1; padding: 18px; min-width: 0; }
+    .bar { height: 9px; border-radius: 5px; background: #e3e3e8; margin-bottom: 12px; }
+    .side .bar { background: #dcdce2; }
+
+    .demo-note {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem;
+      margin-top: 1rem; color: var(--muted); font-size: 1rem;
+    }
+    .demo-note strong { color: var(--ink); font-weight: 600; }
+
+    /* Sections */
+    section.block { padding-block: clamp(3.5rem, 8vw, 6rem) 0; }
+    .block h2 {
+      font-size: clamp(1.9rem, 3.6vw, 2.6rem); line-height: 1.08; letter-spacing: -0.02em;
+      font-weight: 800; margin: 0 0 1.25rem; max-width: 20ch;
+    }
+
+    .story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 2rem 4rem; align-items: start; }
+    .story p { margin: 0 0 1.1rem; max-width: var(--measure); }
+    .story .lead { font-size: clamp(1.3rem, 2.2vw, 1.6rem); line-height: 1.35; font-weight: 600; }
+
+    .actions { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .actions li {
+      display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1.5rem; align-items: center;
+      padding-block: 1.5rem; border-bottom: 1px solid var(--line);
+    }
+    .glyph {
+      width: 5.5rem; height: 4.2rem; border-radius: 16px;
+      background: var(--paper-2);
+      display: grid; place-items: center; color: var(--ink);
+    }
+    .glyph svg { width: 2.6rem; height: 2rem; }
+    .actions h3 { margin: 0 0 .2rem; font-size: 1.35rem; font-weight: 700; }
+    .actions p { margin: 0; color: var(--muted); max-width: var(--measure); }
+
+    .steps { list-style: none; margin: 0; padding: 0; counter-reset: step; display: grid; gap: 1.75rem; max-width: 46rem; }
+    .steps li { counter-increment: step; display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: 1rem; }
+    .steps li::before {
+      content: counter(step);
+      width: 2.75rem; height: 2.75rem; border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 1.2rem;
+      background: var(--ink); color: var(--paper);
+    }
+    .steps h3 { margin: .45rem 0 .35rem; font-size: 1.2rem; font-weight: 700; }
+    .steps p { margin: 0 0 .75rem; color: var(--muted); }
+    pre {
+      margin: 0; padding: 1rem 1.15rem; border-radius: 12px; overflow-x: auto;
+      background: var(--code-bg); color: var(--code-ink);
+      font: 400 .92rem/1.6 "JetBrains Mono", ui-monospace, monospace;
+    }
+    .needs { margin-top: 2rem; color: var(--muted); font-size: 1rem; }
+
+    footer {
+      margin-top: clamp(4rem, 9vw, 7rem); padding-block: 2rem 3rem;
+      border-top: 1px solid var(--line); color: var(--muted); font-size: 1rem;
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
+    }
+    footer p { margin: 0; max-width: 40rem; }
+
+    @media (max-width: 760px) {
+      .story { grid-template-columns: 1fr; }
+      .actions li { grid-template-columns: 4.25rem minmax(0, 1fr); gap: 1rem; }
+      .glyph { width: 4.25rem; height: 3.4rem; border-radius: 12px; }
+      .glyph svg { width: 2rem; height: 1.6rem; }
+      .desktop { aspect-ratio: 4 / 3.4; }
+      .menubar { height: 22px; font-size: 11px; gap: 10px; padding: 0 9px; }
+      .menubar .menu:nth-of-type(n+4) { display: none; }
+      .screen { top: 22px; bottom: 50px; }
+      .dock span { width: 24px; height: 24px; border-radius: 7px; }
+      .dock { gap: 6px; padding: 5px 7px; border-radius: 12px; }
+      .titlebar { height: 34px; padding-left: 9px; gap: 4px; }
+      .lights { gap: 5px; }
+      .lights i { width: 10px; height: 10px; }
+      .tilty button { width: 30px; height: 26px; }
+      .content { height: calc(100% - 34px); }
+      .side { padding: 10px 8px; }
+      .main { padding: 12px; }
+      .win.back { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .win, .tilty { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap top">
+    <a class="brand" href="./"><img src="icon.svg" alt="" width="36" height="36">Tilty</a>
+    <nav><a href="https://github.com/Rajesh-Royal/Tilty">GitHub</a></nav>
+  </header>
+
+  <main>
+    <section class="wrap hero">
+      <h1>Big buttons for tiling windows.</h1>
+      <p>Tilty puts Fill, Left half and Right half in the title bar of the window you're using. One click with the trackpad and it's done. No hovering over the green button, no waiting, no shortcuts to remember.</p>
+      <a class="cta" href="https://github.com/Rajesh-Royal/Tilty">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Get Tilty on GitHub
+      </a>
+
+      <div class="demo">
+        <div class="desktop" aria-label="Interactive preview of Tilty on a Mac desktop" role="group">
+          <div class="menubar" aria-hidden="true">
+            <svg width="14" height="16" viewBox="0 0 13.4 14.6" fill="#1c1c1e"><path d="M7 4.2C5.6 4.2 4.6 3.4 3.4 3.4 1.6 3.4 0 4.9 0 7.6c0 3.2 2.2 7 3.9 7 1 0 1.5-.6 3-.6s1.9.6 3 .6c1.5 0 2.9-2.4 3.5-4-1.6-.7-2.4-2-2.4-3.4 0-1.3.7-2.3 1.6-2.9-.7-.9-1.9-.9-2.3-.9-1.2 0-2.1.8-3.3.8Z"/><path d="M7.1 3.1C7 1.7 8.3.3 9.7.2c.1 1.5-1.2 2.9-2.6 2.9Z"/></svg>
+            <span class="menu app">Notes</span>
+            <span class="menu">File</span>
+            <span class="menu">Edit</span>
+            <span class="menu">View</span>
+            <span class="menu">Window</span>
+            <span class="extras">
+              <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#1c1c1e" stroke-width="1.4"><rect x="2.7" y="2.7" width="4.6" height="12.6" rx="1.3"/><rect x="10.7" y="2.7" width="4.6" height="4.6" rx="1.3"/><rect x="10.7" y="10.7" width="4.6" height="4.6" rx="1.3"/></svg>
+              <svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".5" y=".5" width="19" height="10" rx="2.5" stroke="#1c1c1e" stroke-opacity=".6"/><rect x="2.5" y="2.5" width="12" height="6" rx="1.2" fill="#1c1c1e" fill-opacity=".8"/><rect x="20.5" y="3.5" width="1.5" height="4" rx=".75" fill="#1c1c1e" fill-opacity=".6"/></svg>
+              <span>Fri 11:46</span>
+            </span>
+          </div>
+
+          <div class="screen">
+            <div class="win back" style="--x:58%; --y:7%; --w:34%; --h:46%;" aria-hidden="true">
+              <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span></div>
+            </div>
+
+            <div class="win front" id="win" style="--x:15%; --y:10%; --w:52%; --h:66%;">
+              <div class="titlebar">
+                <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+                <div class="tilty" role="toolbar" aria-label="Tilty">
+                  <button type="button" data-action="fill" aria-pressed="false" title="Fill" aria-label="Fill">
+                    <svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.5"/><rect x="3.2" y="3.2" width="11.6" height="7.6" rx="1.2" fill="currentColor"/></svg>
+                  </button>
+                  <button type="button" data-action="left" aria-pressed="false" title="Left half" aria-label="Left half">
+                    <svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.5"/><rect x="3.2" y="3.2" width="5.6" height="7.6" rx="1.2" fill="currentColor"/></svg>
+                  </button>
+                  <button type="button" data-action="right" aria-pressed="false" title="Right half" aria-label="Right half">
+                    <svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.5"/><rect x="9.2" y="3.2" width="5.6" height="7.6" rx="1.2" fill="currentColor"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="content" aria-hidden="true">
+                <div class="side"><div class="bar" style="width:80%"></div><div class="bar" style="width:60%"></div><div class="bar" style="width:70%"></div></div>
+                <div class="main"><div class="bar" style="width:45%; height:12px; background:#dedee6"></div><div class="bar" style="width:85%"></div><div class="bar" style="width:72%"></div><div class="bar" style="width:78%"></div><div class="bar" style="width:60%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dock" aria-hidden="true">
+            <span style="background:#5ac8fa"></span><span style="background:#34c759"></span><span style="background:#ff9f0a"></span><span style="background:#ff375f"></span><span style="background:#bf5af2"></span><span style="background:#64d2ff"></span><span style="background:#8e8e93"></span>
+          </div>
+        </div>
+        <div class="demo-note">
+          <span><strong>Try it.</strong> Click the buttons next to the traffic lights.</span>
+          <span id="status" aria-live="polite">Click the same button twice to put the window back.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap block story" aria-labelledby="why">
+      <h2 id="why">Made for one laptop and one trackpad.</h2>
+      <div>
+        <p class="lead">If I had a keyboard and a mouse, I would not have built this.</p>
+        <p>I use a laptop only, and I use the trackpad only. My fingers are big and the macOS window buttons are small. Keyboard shortcuts are hard to remember.</p>
+        <p>To make a window bigger without going full screen, I had to hover over the green button, wait for the menu, and then pick Fill. One slip and the window went full screen instead.</p>
+        <p>I don't want to wait even a second. It should be click and done. That's Tilty.</p>
+      </div>
+    </section>
+
+    <section class="wrap block" aria-labelledby="buttons">
+      <h2 id="buttons">Three buttons. That's the whole app.</h2>
+      <ul class="actions">
+        <li>
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.3"/><rect x="3.2" y="3.2" width="11.6" height="7.6" rx="1.2" fill="currentColor"/></svg></span>
+          <div><h3>Fill</h3><p>Makes the window as big as the screen without going full screen. The menu bar and Dock stay right where they are.</p></div>
+        </li>
+        <li>
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.3"/><rect x="3.2" y="3.2" width="5.6" height="7.6" rx="1.2" fill="currentColor"/></svg></span>
+          <div><h3>Left half</h3><p>Snaps the window to the left side of the screen it's on.</p></div>
+        </li>
+        <li>
+          <span class="glyph" aria-hidden="true"><svg viewBox="0 0 18 14" fill="none"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.8" stroke="currentColor" stroke-width="1.3"/><rect x="9.2" y="3.2" width="5.6" height="7.6" rx="1.2" fill="currentColor"/></svg></span>
+          <div><h3>Right half</h3><p>Snaps the window to the right side. Click the same button again and the window goes back to where it was.</p></div>
+        </li>
+      </ul>
+      <div class="demo-note" style="margin-top:1.5rem">
+        <span>The buttons follow whichever window you're using, hide while you drag, and stay out of the way in full screen. In Chrome they sit at the right end of the tab strip so they never cover a tab.</span>
+      </div>
+    </section>
+
+    <section class="wrap block" aria-labelledby="install">
+      <h2 id="install">Install it in a minute.</h2>
+      <ol class="steps">
+        <li>
+          <div>
+            <h3>Build and install</h3>
+            <p>Clone the repo and run the build script. It copies Tilty to your Applications folder and opens it.</p>
+            <pre><code>git clone https://github.com/Rajesh-Royal/Tilty.git
+cd Tilty
+scripts/build-app.sh --install</code></pre>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Allow Accessibility access</h3>
+            <p>macOS asks once. Click Open System Settings, then turn on Tilty in Privacy &amp; Security, Accessibility. Tilty needs this to move other apps' windows.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Click into any window</h3>
+            <p>The buttons show up right after the traffic lights. Tilty lives in the menu bar, where you can pause it or quit.</p>
+          </div>
+        </li>
+      </ol>
+      <p class="needs">Needs macOS 13 or later and Xcode.</p>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p>Free for personal and other noncommercial use under the <a href="https://github.com/Rajesh-Royal/Tilty/blob/main/LICENSE.md">PolyForm Noncommercial License</a>. Use it, share it, change it.</p>
+    <a href="https://github.com/Rajesh-Royal/Tilty">Tilty on GitHub</a>
+  </footer>
+
+  <script>
+    (function () {
+      var win = document.getElementById('win');
+      var status = document.getElementById('status');
+      var buttons = win.querySelectorAll('.tilty button');
+      var frames = {
+        original: { x: '15%', y: '10%', w: '52%', h: '66%' },
+        fill:     { x: '0%',  y: '0%',  w: '100%', h: '100%' },
+        left:     { x: '0%',  y: '0%',  w: '50%',  h: '100%' },
+        right:    { x: '50%', y: '0%',  w: '50%',  h: '100%' }
+      };
+      var messages = {
+        fill: 'Filled. Click Fill again to put it back.',
+        left: 'Left half. Click it again to put it back.',
+        right: 'Right half. Click it again to put it back.',
+        original: 'Back where it was.'
+      };
+      var current = null;
+      var timer = null;
+
+      function apply(name) {
+        var f = frames[name];
+        win.classList.add('moving');
+        win.style.setProperty('--x', f.x);
+        win.style.setProperty('--y', f.y);
+        win.style.setProperty('--w', f.w);
+        win.style.setProperty('--h', f.h);
+        win.classList.toggle('tiled', name !== 'original');
+        clearTimeout(timer);
+        timer = setTimeout(function () { win.classList.remove('moving'); }, 420);
+        buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.action === name)); });
+        status.textContent = messages[name];
+      }
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          var action = button.dataset.action;
+          if (current === action) {
+            current = null;
+            apply('original');
+          } else {
+            current = action;
+            apply(action);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
