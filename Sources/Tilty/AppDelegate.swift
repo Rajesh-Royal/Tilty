@@ -88,18 +88,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func updateStatusIcon() {
-        let name: String
-        if !Accessibility.isTrusted {
-            name = "exclamationmark.triangle"
-        } else if preferences.isPaused {
-            name = "rectangle.split.2x1.slash"
+        guard let button = statusItem?.button else { return }
+        if Accessibility.isTrusted {
+            button.image = StatusIcon.make()
+            // Paused shows the same icon, dimmed.
+            button.appearsDisabled = preferences.isPaused
         } else {
-            name = "rectangle.split.2x1"
+            let warning = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Tilty needs Accessibility access")
+            warning?.isTemplate = true
+            button.image = warning
+            button.appearsDisabled = false
         }
-        let image = NSImage(systemSymbolName: name, accessibilityDescription: "Tilty")
-            ?? NSImage(systemSymbolName: "rectangle.split.2x1", accessibilityDescription: "Tilty")
-        image?.isTemplate = true
-        statusItem?.button?.image = image
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
