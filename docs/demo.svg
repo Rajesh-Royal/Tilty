@@ -26,10 +26,11 @@
   <rect x="82" y="8" width="26" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
   <rect x="116" y="8" width="26" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
   <rect x="150" y="8" width="30" height="8" rx="4" fill="#1c1c1e" fill-opacity="0.35"/>
-  <!-- Menu bar extras, with the Tilty icon (rectangle.split.2x1) first -->
-  <g fill="none" stroke="#1c1c1e" stroke-opacity="0.85" stroke-width="1.4">
-    <rect x="626.7" y="6.7" width="17" height="11" rx="2.5"/>
-    <line x1="635.2" y1="7" x2="635.2" y2="17.4"/>
+  <!-- Menu bar extras, with the Tilty icon first (same tiles as StatusIcon.swift) -->
+  <g transform="translate(624.5 5.4) scale(0.7)" fill="none" stroke="#1c1c1e" stroke-opacity="0.85" stroke-width="1.9">
+    <rect x="2.65" y="2.65" width="4.7" height="12.7" rx="1.3"/>
+    <rect x="10.65" y="2.65" width="4.7" height="4.7" rx="1.3"/>
+    <rect x="10.65" y="10.65" width="4.7" height="4.7" rx="1.3"/>
   </g>
   <g fill="#1c1c1e" fill-opacity="0.75">
     <path d="M661 15.5 a1.6 1.6 0 1 0 0.01 0 Z"/>
